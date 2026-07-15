@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jason Epel</title>
+<meta name="description" content="Jason Epel — personal site.">
+<!-- Public landing site: search-indexable. Code-protected pages under /pages/ carry their own noindex. -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="fonts.css">
+<style id="site-css">
+  :root{
+    --ink:#0B1F2A;         /* ground */
+    --ink-soft:#12303C;
+    --ink-deep:#081821;
+    --bone:#DCE7EA;        /* text */
+    --bone-dim:#7E97A0;
+    --aqua:#5FC7C9;        /* accent */
+    --hair:rgba(220,231,234,0.14);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--ink);
+    color:var(--bone);
+    overflow:hidden;
+  }
+  .app{display:flex;height:100vh;width:100vw}
+
+  /* ---- Left nav ---- */
+  .nav{
+    flex:0 0 268px;
+    background:linear-gradient(180deg,var(--ink) 0%, var(--ink-deep) 100%);
+    border-right:1px solid var(--hair);
+    display:flex;flex-direction:column;
+    padding:34px 26px 22px;
+    z-index:5;position:relative;
+  }
+  .brand{margin-bottom:44px}
+  .brand .mark{
+    display:inline-block;text-decoration:none;
+    font-family:"Fraunces",Georgia,serif;
+    font-weight:500;font-size:26px;letter-spacing:0.2px;line-height:1;
+    color:var(--bone);
+  }
+  .brand .mark em{font-style:italic;color:var(--aqua)}
+  .brand .tag{
+    margin-top:10px;font-size:12px;line-height:1.5;color:var(--bone-dim);
+    max-width:200px;letter-spacing:0.2px;
+  }
+  .menu{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .menu button{
+    all:unset;cursor:pointer;display:flex;align-items:baseline;gap:12px;
+    width:100%;padding:12px 12px;border-radius:9px;
+    color:var(--bone);font-size:15px;letter-spacing:0.2px;
+    transition:background .4s ease, color .4s ease, opacity .45s ease, box-shadow .4s ease;
+  }
+  .menu button .idx{
+    font-family:"Fraunces",serif;font-size:12px;color:var(--bone-dim);
+    width:20px;font-variant-numeric:tabular-nums;transition:color .4s ease;
+  }
+  .menu button:hover{background:rgba(95,199,201,0.08)}
+  .menu button:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
+  .menu button[aria-current="page"]{background:rgba(95,199,201,0.13)}
+  .menu button[aria-current="page"] .idx{color:var(--aqua)}
+  /* during a transition: brighten the pick, dim the rest */
+  .menu.is-transitioning button{opacity:.5;pointer-events:none}
+  .menu.is-transitioning button.picked{
+    opacity:1;color:#FFFFFF;background:rgba(95,199,201,0.22);
+    box-shadow:inset 0 0 0 1px rgba(95,199,201,0.4), 0 0 22px rgba(95,199,201,0.16);
+  }
+  .menu.is-transitioning button.picked .idx{color:var(--aqua)}
+  .nav .foot{
+    margin-top:auto;padding-top:22px;border-top:1px solid var(--hair);
+    font-size:11px;color:var(--bone-dim);line-height:1.6;letter-spacing:0.2px;
+  }
+  .nav .foot a{color:var(--bone-dim);text-decoration:none;border-bottom:1px solid var(--hair)}
+  .nav .foot a:hover{color:var(--aqua)}
+
+  /* ---- Stage ---- */
+  .stage{position:relative;flex:1 1 auto;min-width:0;background:var(--ink)}
+  #gl{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+    z-index:3;opacity:0;pointer-events:none;touch-action:manipulation;
+  }
+  .stage.is-transitioning #gl{opacity:1}
+
+  .panes{position:absolute;inset:0;z-index:1}
+  .pane{
+    position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+    opacity:0;visibility:hidden;
+    transition:opacity .32s ease, visibility 0s linear .32s;
+  }
+  .pane.is-active{opacity:1;visibility:visible;transition:opacity .32s ease}
+  .pane-inner{
+    max-width:760px;
+    padding:clamp(48px,9vh,120px) clamp(32px,7vw,110px) 96px;
+  }
+  .pane .eyebrow{
+    font-weight:600;font-size:13px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--aqua);margin:0 0 20px;
+  }
+  .pane h1,.pane h2.title{
+    font-family:"Fraunces",Georgia,serif;font-weight:500;
+    font-size:clamp(38px,5.4vw,72px);line-height:1.06;letter-spacing:0.2px;
+    color:#F2F7F7;margin:0;
+  }
+  .pane .rule{width:64px;height:1px;background:var(--bone);opacity:.18;margin:26px 0 34px;border:0}
+  .pane .body{font-size:18px;line-height:1.75;color:var(--bone);opacity:.86;max-width:64ch}
+  .pane .body p{margin:0 0 1.1em}
+  .pane .body a{color:var(--aqua);text-decoration:none;border-bottom:1px solid rgba(95,199,201,.4)}
+  .pane .body a:hover{border-bottom-color:var(--aqua)}
+  .pane .lead{font-size:21px;opacity:.95}
+  .pane .numeral{
+    position:absolute;right:clamp(16px,3vw,48px);bottom:2vh;z-index:-1;
+    font-family:"Fraunces",serif;font-weight:500;color:#FFFFFF;opacity:.05;
+    font-size:clamp(140px,26vw,300px);line-height:.8;pointer-events:none;user-select:none;
+  }
+
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* ---- Narrow screens: nav collapses to a top bar ---- */
+  @media (max-width:720px){
+    body{overflow:auto}
+    .app{flex-direction:column;height:auto;min-height:100vh}
+    .nav{flex:0 0 auto;flex-direction:row;align-items:center;gap:16px;
+         padding:14px 16px;border-right:none;border-bottom:1px solid var(--hair);
+         overflow-x:auto;position:sticky;top:0}
+    .brand{margin:0 8px 0 0;flex:0 0 auto}
+    .brand .tag,.nav .foot{display:none}
+    .brand .mark{font-size:20px}
+    .menu{flex-direction:row;gap:2px}
+    .menu button{padding:8px 10px;white-space:nowrap}
+    .menu button .idx{display:none}
+    .stage{min-height:calc(100vh - 56px)}
+    .pane{position:relative;inset:auto;opacity:1;visibility:visible;overflow:visible}
+    /* on mobile, panes stack is unnecessary — show only the active one */
+    .pane:not(.is-active){display:none}
+    #gl{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .pane,.pane.is-active{transition:opacity .2s ease}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Primary">
+    <div class="brand">
+      <a class="mark" href="#overview">Jason&nbsp;<em>Epel</em></a>
+      <div class="tag">Personal site — notes, work, and how to reach me.</div>
+    </div>
+    <ul class="menu" id="menu"></ul>
+    <div class="foot">jason.epel.us</div>
+  </nav>
+
+  <main class="stage" id="stage">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="panes" id="panes">
+
+      <!-- Default tab. NOTE: placeholder copy — real Overview content is task #3 (confirm with Jason). -->
+      <article class="pane" id="page-overview" data-page="overview" data-label="Overview" tabindex="-1" aria-labelledby="h-overview">
+        <div class="pane-inner">
+          <p class="eyebrow">Overview</p>
+          <h1 id="h-overview">Hello — I&rsquo;m Jason Epel.</h1>
+          <hr class="rule">
+          <div class="body">
+            <p class="lead">This is my corner of the web: a small, deliberately quiet place for what I&rsquo;m working on and thinking about.</p>
+            <p>I build software and the teams that ship it. This page is the front door; the tabs to the left will grow over time to cover my work, a proper CV, and the occasional writing.</p>
+            <p><em>(Placeholder introduction — to be replaced with real copy.)</em></p>
+          </div>
+        </div>
+        <div class="numeral" aria-hidden="true">1</div>
+      </article>
+
+      <article class="pane" id="page-contact" data-page="contact" data-label="Contact" tabindex="-1" aria-labelledby="h-contact">
+        <div class="pane-inner">
+          <p class="eyebrow">Contact</p>
+          <h2 class="title" id="h-contact">Say hello.</h2>
+          <hr class="rule">
+          <div class="body">
+            <p class="lead">The best way to reach me is by email.</p>
+            <p><a href="mailto:jason.epel@esub.com">jason.epel@esub.com</a></p>
+            <p><em>(Placeholder — links and details to be finalized.)</em></p>
+          </div>
+        </div>
+        <div class="numeral" aria-hidden="true">2</div>
+      </article>
+
+    </div>
+    <p class="sr-only" id="live" aria-live="polite"></p>
+  </main>
+</div>
+
+<script>
+"use strict";
+(function(){
+  /* ------------------------------------------------------------------ *
+   * Data-driven nav: every <article class="pane"> becomes a tab, in DOM
+   * order, using its data-label. Add a page later = add a .pane with a
+   * data-page + data-label; the nav and the ripple pick it up for free.
+   * ------------------------------------------------------------------ */
+  const panesEl = document.getElementById("panes");
+  const menuEl  = document.getElementById("menu");
+  const liveEl  = document.getElementById("live");
+  const stage   = document.getElementById("stage");
+  const canvas  = document.getElementById("gl");
+
+  const panes  = Array.from(panesEl.querySelectorAll(".pane"));
+  const labels = panes.map(p => p.dataset.label || p.id);
+  const slugs  = panes.map(p => p.dataset.page || p.id);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isNarrow = () => window.matchMedia("(max-width:720px)").matches;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  let current = 0;
+  let busy = false;
+
+  /* ---- Menu ---- */
+  function buildMenu(){
+    menuEl.innerHTML = "";
+    panes.forEach((p, i) => {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.idx = i;
+      b.innerHTML = `<span class="idx">${String(i+1).padStart(2,"0")}</span><span>${labels[i]}</span>`;
+      b.addEventListener("click", e => go(i, e.clientX, e.clientY));
+      li.appendChild(b); menuEl.appendChild(li);
+    });
+    syncMenu();
+  }
+  function syncMenu(){
+    Array.from(menuEl.querySelectorAll("button")).forEach((b,i) => {
+      if(i === current) b.setAttribute("aria-current","page");
+      else b.removeAttribute("aria-current");
+    });
+  }
+  function navEnter(idx){
+    menuEl.classList.add("is-transitioning");
+    Array.from(menuEl.querySelectorAll("button")).forEach((b,i)=>b.classList.toggle("picked", i===idx));
+  }
+  function navExit(){
+    menuEl.classList.remove("is-transitioning");
+    Array.from(menuEl.querySelectorAll("button")).forEach(b=>b.classList.remove("picked"));
+  }
+
+  /* ---- Pane activation (real DOM; a11y-correct) ---- */
+  function activate(idx){
+    panes.forEach((p,i) => {
+      const on = i === idx;
+      p.classList.toggle("is-active", on);
+      if(on){ p.removeAttribute("aria-hidden"); p.removeAttribute("inert"); }
+      else  { p.setAttribute("aria-hidden","true"); p.setAttribute("inert",""); }
+    });
+    current = idx;
+    syncMenu();
+  }
+
+  /* ================================================================== *
+   * WebGL water-ripple — plays over SNAPSHOTS of the outgoing/incoming
+   * panes during a tab change, then the real DOM shows. Adapted from the
+   * sample prototype; textures are DOM snapshots instead of raster pages.
+   * Any failure (no WebGL, snapshot error) falls back to a CSS crossfade,
+   * which is also the prefers-reduced-motion path.
+   * ================================================================== */
+  const gl = (!reduceMotion && !isNarrow())
+    ? (canvas.getContext("webgl", {premultipliedAlpha:false, antialias:true})
+       || canvas.getContext("experimental-webgl"))
+    : null;
+
+  let TEX = null, U = {}, prog = null;
+  if(gl){ try { initGL(); } catch(e){ teardownGL(); } }
+
+  function initGL(){
+    const VERT = `attribute vec2 aPos; varying vec2 vUv;
+      void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }`;
+    const FRAG = `
+      precision highp float; varying vec2 vUv;
+      uniform sampler2D uOld, uNew; uniform vec2 uRes, uOrigin;
+      uniform float uTime, uFront, uAmp, uMode, uFade;
+      void main(){
+        float aspect = uRes.x / uRes.y;
+        vec2 p  = vec2(vUv.x*aspect, vUv.y);
+        vec2 po = vec2(uOrigin.x*aspect, uOrigin.y);
+        vec2 dv = p - po; float d = length(dv);
+        vec2 dir = d > 1e-4 ? dv/d : vec2(0.0);
+        if(uMode > 0.5){ gl_FragColor = mix(texture2D(uNew,vUv), texture2D(uOld,vUv), uFade); return; }
+        float edge = 0.055;
+        float oldW = smoothstep(uFront-edge, uFront+edge, d);
+        float band  = exp(-pow((d-uFront)/0.10, 2.0));
+        float phase = d*68.0 - uTime*15.0;
+        float wave  = sin(phase)*0.65 + sin(phase*0.5+1.7)*0.35;
+        float hFront = wave*band;
+        float settle = sin(d*52.0 - uTime*12.0)*exp(-uTime*2.0)*0.5;
+        float field = (hFront + settle) * uAmp;
+        vec2 uvOff = vec2(dir.x/aspect, dir.y) * (field * 0.042);
+        vec4 oldC = texture2D(uOld, vUv + uvOff);
+        vec4 newC = texture2D(uNew, vUv + uvOff*0.7);
+        vec4 col  = mix(newC, oldC, oldW);
+        col.rgb += max(field,0.0) * 0.16 * vec3(0.85,0.95,1.0);
+        float foam = exp(-pow((d-uFront)/0.028, 2.0)) * smoothstep(0.0,0.12,uFront);
+        col.rgb = mix(col.rgb, vec3(0.9,0.97,1.0), foam*0.45*uAmp);
+        gl_FragColor = col;
+      }`;
+    const compile = (type, src) => {
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    };
+    prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link failed");
+    gl.useProgram(prog);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, "aPos");
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    ["uOld","uNew","uRes","uOrigin","uTime","uFront","uAmp","uMode","uFade"]
+      .forEach(n => U[n] = gl.getUniformLocation(prog, n));
+    gl.uniform1i(U.uOld, 0); gl.uniform1i(U.uNew, 1);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    TEX = [0,1].map(() => {
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      return t;
+    });
+  }
+  function teardownGL(){ try{ if(gl){ /* let context be GC'd */ } }catch(e){} }
+
+  let glW=0, glH=0;
+  function sizeCanvas(){
+    const r = canvas.getBoundingClientRect();
+    glW = Math.max(1, r.width); glH = Math.max(1, r.height);
+    canvas.width = Math.floor(glW*DPR); canvas.height = Math.floor(glH*DPR);
+    if(gl){ gl.viewport(0,0,canvas.width,canvas.height); gl.uniform2f(U.uRes, glW, glH); }
+  }
+
+  /* ---- DOM snapshot -> texture (taint-free: self-hosted fonts inlined) ----
+   * Fonts are inlined as data URIs and there are no cross-origin resources, so the
+   * snapshot canvas is NOT tainted and can be uploaded to WebGL. Two known graceful
+   * degradations (both fall back to the CSS crossfade — never break):
+   *   • Safari/WebKit may rasterize <foreignObject> loaded via img.src as blank; the
+   *     ripple then washes over a solid background colour instead of the content.
+   *   • If a pane ever includes an <img> or other external/binary asset, the canvas
+   *     taints and texImage2D throws -> that transition uses the crossfade instead.
+   * MAINTENANCE: keep pane content self-contained (text; inline any imagery as data
+   * URIs) to preserve the content-refraction ripple.
+   */
+  const SNAP_OVERRIDE =
+    ".pane{position:static!important;inset:auto!important;opacity:1!important;" +
+    "visibility:visible!important;overflow:hidden!important;display:block!important;" +
+    "height:100%!important;transition:none!important}";
+
+  let _fontCSS = null;
+  const PANE_FONTS = [
+    ["Inter","normal",400,"fonts/inter-normal-400.woff2"],
+    ["Inter","normal",600,"fonts/inter-normal-600.woff2"],
+    ["Fraunces","normal",500,"fonts/fraunces-normal-500.woff2"],
+  ];
+  function bufToB64(buf){
+    let s=""; const b=new Uint8Array(buf);
+    for(let i=0;i<b.length;i+=0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i+0x8000));
+    return btoa(s);
+  }
+  async function fontFaceCSS(){
+    if(_fontCSS !== null) return _fontCSS;
+    try{
+      const parts = await Promise.all(PANE_FONTS.map(async ([fam,style,wght,url]) => {
+        const buf = await (await fetch(url, {cache:"force-cache"})).arrayBuffer();
+        return `@font-face{font-family:'${fam}';font-style:${style};font-weight:${wght};`+
+               `src:url(data:font/woff2;base64,${bufToB64(buf)}) format('woff2')}`;
+      }));
+      _fontCSS = parts.join("");
+    }catch(e){ _fontCSS = ""; }
+    return _fontCSS;
+  }
+  async function paneToImage(pane, w, h){
+    const clone = pane.cloneNode(true);
+    clone.classList.add("is-active");
+    const siteCSS = document.getElementById("site-css").textContent;
+    const fontCSS = await fontFaceCSS();
+    const xhtml = new XMLSerializer().serializeToString(clone);
+    const bg = getComputedStyle(stage).backgroundColor || "#0B1F2A";
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`+
+      `<foreignObject x="0" y="0" width="${w}" height="${h}">`+
+      `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;background:${bg};overflow:hidden">`+
+      `<style>${fontCSS}${siteCSS}${SNAP_OVERRIDE}</style>${xhtml}</div>`+
+      `</foreignObject></svg>`;
+    const img = new Image();
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    await img.decode();
+    return img;
+  }
+  async function paneToTexture(pane, unit){
+    const w = Math.max(2, Math.floor(glW)), h = Math.max(2, Math.floor(glH));
+    const cnv = document.createElement("canvas");
+    cnv.width = Math.floor(w*DPR); cnv.height = Math.floor(h*DPR);
+    const ctx = cnv.getContext("2d");
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.fillStyle = getComputedStyle(stage).backgroundColor || "#0B1F2A";
+    ctx.fillRect(0,0,w,h);
+    try { ctx.drawImage(await paneToImage(pane, w, h), 0, 0, w, h); }
+    catch(e){ /* keep solid background fill as a graceful degrade */ }
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, TEX[unit]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cnv);
+  }
+
+  /* ---- Ripple animation ---- */
+  const smooth01 = (a,b,x) => { const t=Math.min(1,Math.max(0,(x-a)/(b-a))); return t*t*(3-2*t); };
+  let anim = null;
+  function frame(now){
+    if(!anim) return;
+    const t = (now - anim.start)/1000;
+    const dur = anim.duration;
+    const rise = smooth01(0.0, 0.05, t);
+    const fall = 1.0 - smooth01(dur - 0.5, dur, t);
+    gl.uniform1f(U.uMode, 0);
+    gl.uniform2f(U.uOrigin, anim.origin[0], anim.origin[1]);
+    gl.uniform1f(U.uTime, t);
+    gl.uniform1f(U.uFront, anim.speed * t);
+    gl.uniform1f(U.uAmp, rise * fall);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if(t >= dur){ anim = null; anim_done(); return; }
+    requestAnimationFrame(frame);
+  }
+  let anim_done = () => {};
+
+  /* ---- Crossfade fallback (reduced-motion / no-GL / snapshot failure) ---- */
+  function crossfade(idx){
+    return new Promise(res => {
+      activate(idx);
+      const dur = reduceMotion ? 200 : 340;
+      setTimeout(res, dur);
+    });
+  }
+
+  /* ---- Transition entry point ---- */
+  const syncHash = (push) => {
+    const h = "#" + slugs[current];
+    if(location.hash === h) return;             // already there (e.g. popstate-driven)
+    if(push) history.pushState(null, "", h); else history.replaceState(null, "", h);
+  };
+  async function go(targetIdx, clientX, clientY, push){
+    if(push === undefined) push = true;
+    if(busy || targetIdx === current) return;
+    busy = true;
+    navEnter(targetIdx);
+    liveEl.textContent = "Loading " + labels[targetIdx];
+
+    const finish = () => {
+      stage.classList.remove("is-transitioning");
+      navExit(); busy = false;
+      liveEl.textContent = "Now viewing " + labels[current];
+      const pane = panes[current];
+      if(pane && typeof pane.focus === "function") pane.focus({preventScroll:true});
+    };
+
+    if(!gl || reduceMotion || isNarrow()){
+      await crossfade(targetIdx);
+      finish();
+      syncHash(push);
+      return;
+    }
+
+    try{
+      sizeCanvas();
+      await paneToTexture(panes[current], 0);   // old
+      await paneToTexture(panes[targetIdx], 1); // new
+    }catch(e){
+      await crossfade(targetIdx);
+      finish();
+      syncHash(push);
+      return;
+    }
+
+    // Reveal the real target pane underneath, then wash the ripple over the top.
+    activate(targetIdx);
+    stage.classList.add("is-transitioning");
+
+    const rect = canvas.getBoundingClientRect();
+    const ux = clientX==null ? 0.5 : Math.min(1, Math.max(0, (clientX - rect.left)/glW));
+    const uyDown = clientY==null ? 0.5 : Math.min(1, Math.max(0, (clientY - rect.top)/glH));
+    const origin = [ux, 1 - uyDown];
+    const aspect = glW/glH;
+    const ox = origin[0]*aspect, oy = origin[1];
+    let maxD = 0;
+    for(const cx of [0,aspect]) for(const cy of [0,1]) maxD = Math.max(maxD, Math.hypot(cx-ox, cy-oy));
+    const washDur = 0.6;
+    anim = { origin, start: performance.now(), speed: maxD/washDur, duration: washDur + 0.75 };
+    anim_done = () => { finish(); syncHash(push); };
+    requestAnimationFrame(frame);
+  }
+
+  /* ---- Routing: direct links + back/forward via #slug ---- */
+  function idxFromHash(){
+    const s = (location.hash || "").replace(/^#/, "");
+    const i = slugs.indexOf(s);
+    return i < 0 ? 0 : i;
+  }
+  window.addEventListener("popstate", () => {
+    const i = idxFromHash();
+    if(i !== current) go(i, null, null, false);   // URL already moved; don't push again
+  });
+
+  /* ---- Boot ---- */
+  function boot(){
+    buildMenu();
+    activate(idxFromHash());          // initial view: no ripple
+    if(gl){
+      sizeCanvas();
+      if("ResizeObserver" in window){ new ResizeObserver(sizeCanvas).observe(canvas); }
+      else { window.addEventListener("resize", sizeCanvas); }
+      fontFaceCSS();                  // warm the font cache for the first transition
+    }
+    liveEl.textContent = "Now viewing " + labels[current];
+  }
+  if(document.fonts && document.fonts.ready){
+    Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,1500))]).then(boot);
+  } else boot();
+})();
+</script>
+</body>
+</html>
