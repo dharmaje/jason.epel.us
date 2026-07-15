@@ -1,0 +1,4 @@
+# jason.epel.us — the public site is crawlable; code-protected pages are not.
+User-agent: *
+Allow: /
+Disallow: /pages/
