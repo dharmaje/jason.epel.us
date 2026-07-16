@@ -185,7 +185,7 @@
           <hr class="rule">
           <div class="body">
             <p class="lead">The best way to reach me is by email.</p>
-            <p><a href="mailto:j@epel.us">j@epel.us</a></p>
+            <p><a href="/cdn-cgi/l/email-protection#741e34110411185a0107"><span class="__cf_email__" data-cfemail="90fad0f5e0f5fcbee5e3">[email&#160;protected]</span></a></p>
             <p><em>(Placeholder — links and details to be finalized.)</em></p>
           </div>
         </div>
@@ -197,7 +197,7 @@
   </main>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 "use strict";
 (function(){
   /* ------------------------------------------------------------------ *
@@ -389,6 +389,20 @@
     }catch(e){ _fontCSS = ""; }
     return _fontCSS;
   }
+  // Resolve the vw/vh-driven rules to real pixels from the live DOM so the
+  // snapshot matches the window-based layout (see paneToImage for why).
+  function viewportUnitFix(){
+    const cs = el => el ? getComputedStyle(el) : null;
+    const inner = cs(document.querySelector(".pane-inner"));
+    const title = cs(document.querySelector(".pane h1, .pane h2.title"));
+    const num   = cs(document.querySelector(".pane .numeral"));
+    let out = "";
+    if(inner) out += `.pane-inner{padding:${inner.padding}!important}`;
+    if(title) out += `.pane h1,.pane h2.title{font-size:${title.fontSize}!important}`;
+    if(num)   out += `.pane .numeral{font-size:${num.fontSize}!important;`+
+                     `right:${num.right}!important;bottom:${num.bottom}!important}`;
+    return out;
+  }
   async function paneToImage(pane, w, h){
     const clone = pane.cloneNode(true);
     clone.classList.add("is-active");
@@ -396,11 +410,19 @@
     const fontCSS = await fontFaceCSS();
     const xhtml = new XMLSerializer().serializeToString(clone);
     const bg = getComputedStyle(stage).backgroundColor || "#0B1F2A";
+    // Freeze viewport-relative sizing to the LIVE layout. Inside a rasterized
+    // <foreignObject>, vw/vh resolve to the SVG viewport (the stage-sized texture),
+    // not the window — so 7vw padding, the 5.4vw title, and the 26vw numeral would
+    // render smaller than the real page and the DOM would visibly "pop" to the
+    // correct layout the instant the ripple hands off. Copying the real computed
+    // pixels keeps the snapshot pixel-identical to the final page.
+    const vwFix = viewportUnitFix();
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`+
       `<foreignObject x="0" y="0" width="${w}" height="${h}">`+
-      `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;background:${bg};overflow:hidden">`+
-      `<style>${fontCSS}${siteCSS}${SNAP_OVERRIDE}</style>${xhtml}</div>`+
+      `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;background:${bg};overflow:hidden;`+
+        `font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif">`+
+      `<style>${fontCSS}${siteCSS}${SNAP_OVERRIDE}${vwFix}</style>${xhtml}</div>`+
       `</foreignObject></svg>`;
     const img = new Image();
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
