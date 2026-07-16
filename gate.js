@@ -7,6 +7,11 @@
  * in the browser. On success the real page is rendered; on failure the visitor
  * can retry, and if the payload is missing/unreadable the 404 page is shown.
  *
+ * SHAREABLE LINKS: the code may also be supplied in the URL hash, e.g.
+ * https://jason.epel.us/p/<name>/#code=THECODE (a bare #THECODE also works).
+ * The page then unlocks automatically; the hash is scrubbed from the address bar
+ * on success. Anyone without the link still gets the manual prompt.
+ *
  * REQUIRED BOILERPLATE in each gated page's <head> (written by publish.py):
  *   <style>html { visibility: hidden; }</style>
  *   <script>window.__DESIGN_GATE__ = { enc: "content.enc", title: "…" };</script>
@@ -38,6 +43,35 @@
   }
 
   function reveal() { document.documentElement.style.visibility = "visible"; }
+
+  // Read an access code supplied in the URL hash, for shareable "auto-unlock"
+  // links. Accepts "#code=<value>" (also tolerates other params alongside it)
+  // or a bare "#<value>". The value is percent-decoded and surrounding
+  // whitespace is trimmed; case is otherwise preserved (codes are case-sensitive).
+  // The hash is never sent to the server, but it IS visible in the address bar
+  // and browser history until scrubHash() clears it on a successful unlock.
+  function codeFromHash() {
+    var h = (location.hash || "").replace(/^#/, "");
+    if (!h) return "";
+    var value;
+    if (h.indexOf("=") !== -1) {
+      try { value = new URLSearchParams(h).get("code") || ""; }
+      catch (e) { value = ""; }
+    } else {
+      try { value = decodeURIComponent(h); } catch (e) { value = h; }
+    }
+    return value.replace(/^\s+|\s+$/g, "");
+  }
+
+  // Drop the code from the visible URL after a hash-based unlock so it isn't
+  // left sitting in the address bar (replaceState avoids a new history entry).
+  function scrubHash() {
+    try {
+      if (location.hash && window.history && history.replaceState) {
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+    } catch (e) {}
+  }
 
   async function deriveKey(code, saltBytes, iterations) {
     var enc = new TextEncoder();
@@ -179,20 +213,31 @@
       show404();
       return;
     }
-    // Try a cached code from this session first (survives refresh, not tab close).
+    // Codes to try silently before showing the prompt, in priority order:
+    //   1. a code supplied in the URL hash (shareable auto-unlock link)
+    //   2. a code cached from earlier this session (survives refresh, not tab close)
+    var candidates = [];
+    var hashCode = codeFromHash();
+    if (hashCode) candidates.push({ code: hashCode, source: "hash" });
     var cached = "";
     try { cached = sessionStorage.getItem(STORAGE_KEY) || ""; } catch (e) {}
-    if (cached) {
+    if (cached && cached !== hashCode) candidates.push({ code: cached, source: "cache" });
+
+    for (var i = 0; i < candidates.length; i++) {
       try {
         var env = await loadEnvelope();
-        _lastCode = cached;
-        var html = await decrypt(env, cached);
+        _lastCode = candidates[i].code;
+        var html = await decrypt(env, candidates[i].code);   // throws on wrong code
+        if (candidates[i].source === "hash") scrubHash();
         render(html);
         return;
       } catch (e) {
-        try { sessionStorage.removeItem(STORAGE_KEY); } catch (e2) {}
         if (e && e.message === "payload-missing") { show404(); return; }
-        // fall through to prompt
+        // Wrong code from this source: drop a stale cache entry, try the next.
+        if (candidates[i].source === "cache") {
+          try { sessionStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+        }
+        // fall through to the next candidate / prompt
       }
     }
     buildPrompt();
