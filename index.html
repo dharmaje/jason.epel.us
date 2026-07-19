@@ -3,559 +3,854 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jason Epel</title>
-<meta name="description" content="Jason Epel — personal site.">
+<title>Jason Epel — VP, Engineering &amp; Technology</title>
+<meta name="description" content="Jason Epel — VP of Engineering &amp; Technology. Engineering leadership across SaaS, cloud, data, and AI, with a full career history and skills.">
 <!-- Public landing site: search-indexable. Code-protected pages under /p/ carry their own noindex. -->
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="fonts.css">
+<!-- Set the stored theme before first paint so there is no flash of the wrong mode.
+     No stored value = follow the system preference via the CSS media query below. -->
+<script>(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
 <style id="site-css">
   :root{
-    --ink:#0B1F2A;         /* ground */
-    --ink-soft:#12303C;
-    --ink-deep:#081821;
-    --bone:#DCE7EA;        /* text */
-    --bone-dim:#7E97A0;
-    --aqua:#5FC7C9;        /* accent */
+    /* ---- DARK theme (default) ---- */
+    --bg:#0B1F2A;              /* page + card ground */
+    --bg-deep:#081821;         /* sidebar gradient bottom */
+    --text:#DCE7EA;
+    --text-strong:#F2F7F7;
+    --text-dim:#8AA0A8;
+    --accent:#5FC7C9;          /* aqua */
+    --accent-name:#5FC7C9;     /* the "Epel" accent */
+    --accent-soft:rgba(95,199,201,0.13);
+    --accent-softer:rgba(95,199,201,0.07);
+    --accent-line:rgba(95,199,201,0.42);
+    --tag-bg:rgba(95,199,201,0.07);
     --hair:rgba(220,231,234,0.14);
+    --hair-soft:rgba(220,231,234,0.08);
+    --on-accent:#06161E;
+    color-scheme:dark;
+
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --serif:Georgia,"Times New Roman",serif;   /* the name only */
+    --nav-w:288px;
+    --topbar-h:60px;
   }
+  /* LIGHT tokens — applied on explicit toggle OR when the system prefers light. */
+  :root[data-theme="light"]{
+    --bg:#F5F8F9;
+    --bg-deep:#E7EFF1;
+    --text:#20404A;
+    --text-strong:#0C2731;
+    --text-dim:#5A737C;
+    --accent:#0B6E70;
+    --accent-name:#0B6E70;
+    --accent-soft:rgba(11,110,112,0.12);
+    --accent-softer:rgba(11,110,112,0.06);
+    --accent-line:rgba(11,110,112,0.34);
+    --tag-bg:rgba(11,110,112,0.06);
+    --hair:rgba(12,39,49,0.14);
+    --hair-soft:rgba(12,39,49,0.07);
+    --on-accent:#FFFFFF;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]):not([data-theme="light"]){
+      --bg:#F5F8F9;
+      --bg-deep:#E7EFF1;
+      --text:#20404A;
+      --text-strong:#0C2731;
+      --text-dim:#5A737C;
+      --accent:#0B6E70;
+      --accent-name:#0B6E70;
+      --accent-soft:rgba(11,110,112,0.12);
+      --accent-softer:rgba(11,110,112,0.06);
+      --accent-line:rgba(11,110,112,0.34);
+      --tag-bg:rgba(11,110,112,0.06);
+      --hair:rgba(12,39,49,0.14);
+      --hair-soft:rgba(12,39,49,0.07);
+      --on-accent:#FFFFFF;
+      color-scheme:light;
+    }
+  }
+
   *{box-sizing:border-box}
-  html,body{height:100%}
+  html{scroll-behavior:smooth}
   body{
     margin:0;
-    font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    background:var(--ink);
-    color:var(--bone);
-    overflow:hidden;
+    font-family:var(--sans);
+    font-size:18px;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.65;
   }
-  .app{display:flex;height:100vh;width:100vw}
+  a{color:inherit}
 
-  /* ---- Left nav ---- */
+  .skip{
+    position:absolute;left:-9999px;top:0;z-index:50;
+    background:var(--accent);color:var(--on-accent);padding:10px 16px;border-radius:0 0 8px 0;
+    font-weight:700;text-decoration:none;
+  }
+  .skip:focus{left:0}
+
+  /* ---- Left nav (fixed) ---- */
   .nav{
-    flex:0 0 268px;
-    background:linear-gradient(180deg,var(--ink) 0%, var(--ink-deep) 100%);
+    position:fixed;top:0;left:0;width:var(--nav-w);height:100vh;
+    background:linear-gradient(180deg,var(--bg) 0%, var(--bg-deep) 100%);
     border-right:1px solid var(--hair);
     display:flex;flex-direction:column;
-    padding:34px 26px 22px;
-    z-index:5;position:relative;
+    padding:34px 24px 20px;z-index:20;
   }
-  .brand{margin-bottom:44px}
+  .brand{margin-bottom:26px;flex:0 0 auto}
   .brand .mark{
     display:inline-block;text-decoration:none;
-    font-family:"Fraunces",Georgia,serif;
-    font-weight:500;font-size:26px;letter-spacing:0.2px;line-height:1;
-    color:var(--bone);
+    font-family:var(--serif);font-weight:400;font-size:28px;letter-spacing:0.2px;line-height:1;
+    color:var(--text);
   }
-  .brand .mark em{font-style:italic;color:var(--aqua)}
+  .brand .mark em{font-style:normal;color:var(--accent-name)}
   .brand .tag{
-    margin-top:10px;font-size:12px;line-height:1.5;color:var(--bone-dim);
-    max-width:200px;letter-spacing:0.2px;
+    margin-top:11px;font-size:13px;line-height:1.55;color:var(--text-dim);
+    max-width:220px;letter-spacing:0.2px;
   }
-  .menu{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-  .menu button{
-    all:unset;cursor:pointer;display:flex;align-items:baseline;gap:12px;
-    width:100%;padding:12px 12px;border-radius:9px;
-    color:var(--bone);font-size:15px;letter-spacing:0.2px;
-    transition:background .4s ease, color .4s ease, opacity .45s ease, box-shadow .4s ease;
+
+  .menu{
+    list-style:none;margin:0;padding:0 0 8px;overflow-y:auto;flex:1 1 auto;
+    scrollbar-width:thin;scrollbar-color:var(--hair) transparent;
   }
-  .menu button .idx{
-    font-family:"Fraunces",serif;font-size:12px;color:var(--bone-dim);
-    width:20px;font-variant-numeric:tabular-nums;transition:color .4s ease;
+  .menu::-webkit-scrollbar{width:8px}
+  .menu::-webkit-scrollbar-thumb{background:var(--hair);border-radius:8px}
+  .nav-top > button{
+    all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;
+    padding:11px 12px;border-radius:8px;border-left:3px solid transparent;
+    color:var(--text);font-size:15.5px;letter-spacing:0.2px;
+    transition:background .25s ease,color .25s ease,border-color .25s ease;
   }
-  .menu button:hover{background:rgba(95,199,201,0.08)}
-  .menu button:focus-visible{outline:2px solid var(--aqua);outline-offset:2px}
-  .menu button[aria-current="page"]{background:rgba(95,199,201,0.13)}
-  .menu button[aria-current="page"] .idx{color:var(--aqua)}
-  /* during a transition: brighten the pick, dim the rest */
-  .menu.is-transitioning button{opacity:.5;pointer-events:none}
-  .menu.is-transitioning button.picked{
-    opacity:1;color:#FFFFFF;background:rgba(95,199,201,0.22);
-    box-shadow:inset 0 0 0 1px rgba(95,199,201,0.4), 0 0 22px rgba(95,199,201,0.16);
+  .nav-top > button:hover{background:var(--accent-softer)}
+  .nav-top > button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .nav-top > button[aria-current]{
+    background:var(--accent-soft);border-left-color:var(--accent);
+    color:var(--text-strong);font-weight:600;
   }
-  .menu.is-transitioning button.picked .idx{color:var(--aqua)}
+
+  /* sub list — revealed when its parent is the active section */
+  .nav-sub{
+    list-style:none;margin:2px 0 6px;padding:0 0 0 4px;
+    max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .35s ease,opacity .25s ease;
+  }
+  .nav-top.expanded .nav-sub{max-height:900px;opacity:1}
+  .nav-sub > li > button{
+    all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;
+    padding:7px 12px 7px 16px;margin:1px 0;border-radius:7px;
+    border-left:2px solid var(--hair-soft);
+    color:var(--text-dim);font-size:14.5px;letter-spacing:0.2px;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
+  }
+  .nav-sub > li > button:hover{background:var(--accent-softer);color:var(--text)}
+  .nav-sub > li > button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .nav-sub > li > button[aria-current]{
+    color:var(--text-strong);border-left-color:var(--accent);
+    background:var(--accent-soft);font-weight:600;
+  }
+
   .nav .foot{
-    margin-top:auto;padding-top:22px;border-top:1px solid var(--hair);
-    font-size:11px;color:var(--bone-dim);line-height:1.6;letter-spacing:0.2px;
+    flex:0 0 auto;margin-top:14px;padding-top:16px;border-top:1px solid var(--hair);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-size:11.5px;color:var(--text-dim);letter-spacing:0.3px;
   }
-  .nav .foot a{color:var(--bone-dim);text-decoration:none;border-bottom:1px solid var(--hair)}
-  .nav .foot a:hover{color:var(--aqua)}
 
-  /* ---- Stage ---- */
-  .stage{position:relative;flex:1 1 auto;min-width:0;background:var(--ink)}
-  #gl{
-    position:absolute;inset:0;width:100%;height:100%;display:block;
-    z-index:3;opacity:0;pointer-events:none;touch-action:manipulation;
-    transition:opacity .15s ease;
+  /* theme toggle */
+  .theme-toggle{
+    all:unset;box-sizing:border-box;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 11px;border-radius:8px;border:1px solid var(--hair);
+    color:var(--text-dim);font:600 12.5px/1 var(--sans);letter-spacing:0.3px;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
   }
-  .stage.is-transitioning #gl{opacity:1}
+  .theme-toggle:hover{color:var(--text);background:var(--accent-softer);border-color:var(--accent-line)}
+  .theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .theme-toggle svg{width:16px;height:16px;display:block;flex:0 0 auto}
 
-  .panes{position:absolute;inset:0;z-index:1}
-  .pane{
-    position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
-    opacity:0;visibility:hidden;
-    transition:opacity .32s ease, visibility 0s linear .32s;
+  /* ---- Main scrolling column ---- */
+  .main{margin-left:var(--nav-w)}
+  .content{
+    max-width:1040px;
+    padding:clamp(52px,8vh,104px) clamp(28px,5vw,88px) 45vh;
   }
-  .pane.is-active{opacity:1;visibility:visible;transition:opacity .32s ease}
-  .pane-inner{
-    max-width:760px;
-    padding:clamp(48px,9vh,120px) clamp(32px,7vw,110px) 96px;
+  .sect{scroll-margin-top:32px}
+  .sub{scroll-margin-top:32px}
+
+  .eyebrow{
+    font-weight:700;font-size:13px;letter-spacing:2.4px;text-transform:uppercase;
+    color:var(--accent);margin:0 0 18px;
   }
-  .pane .eyebrow{
-    font-weight:600;font-size:13px;letter-spacing:2.5px;text-transform:uppercase;
-    color:var(--aqua);margin:0 0 20px;
+  h1.hero{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(44px,6.2vw,80px);line-height:1.02;letter-spacing:0.5px;
+    color:var(--text-strong);margin:0;
   }
-  .pane h1,.pane h2.title{
-    font-family:"Fraunces",Georgia,serif;font-weight:500;
-    font-size:clamp(38px,5.4vw,72px);line-height:1.06;letter-spacing:0.2px;
-    color:#F2F7F7;margin:0;
+  h1.hero em{font-style:normal;color:var(--accent-name)}
+  .subtitle{
+    margin:20px 0 0;font-size:clamp(17px,2vw,21px);line-height:1.5;color:var(--text);
+    opacity:.92;font-weight:400;max-width:64ch;
   }
-  .pane .rule{width:64px;height:1px;background:var(--bone);opacity:.18;margin:26px 0 34px;border:0}
-  .pane .body{font-size:18px;line-height:1.75;color:var(--bone);opacity:.86;max-width:64ch}
-  .pane .body p{margin:0 0 1.1em}
-  .pane .body a{color:var(--aqua);text-decoration:none;border-bottom:1px solid rgba(95,199,201,.4)}
-  .pane .body a:hover{border-bottom-color:var(--aqua)}
-  .pane .lead{font-size:21px;opacity:.95}
-  .pane .numeral{
-    position:absolute;right:clamp(16px,3vw,48px);bottom:2vh;z-index:-1;
-    font-family:"Fraunces",serif;font-weight:500;color:#FFFFFF;opacity:.05;
-    font-size:clamp(140px,26vw,300px);line-height:.8;pointer-events:none;user-select:none;
+  .rule{width:60px;height:1px;background:var(--text);opacity:.22;margin:30px 0 30px;border:0}
+
+  .body{font-size:18.5px;line-height:1.75;color:var(--text);opacity:.92;max-width:72ch}
+  .body p{margin:0 0 1.05em}
+  .body p.lead{font-size:20.5px;opacity:1}
+  .body a,.link{
+    color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line);
+    transition:border-color .2s ease;
   }
+  .body a:hover,.link:hover{border-bottom-color:var(--accent)}
+
+  h2.title{
+    font-family:var(--sans);font-weight:700;
+    font-size:clamp(32px,4.2vw,48px);line-height:1.1;letter-spacing:-0.01em;
+    color:var(--text-strong);margin:0;
+  }
+  #experience{margin-top:clamp(72px,12vh,140px)}
+  .sect-intro{margin:0 0 8px;font-size:18px;line-height:1.7;color:var(--text);opacity:.86;max-width:70ch}
+
+  .sub{margin-top:56px}
+  .sub h3{
+    font-family:var(--sans);font-weight:600;font-size:24px;line-height:1.25;letter-spacing:-0.005em;
+    color:var(--text-strong);margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  }
+  .role-meta{
+    margin:7px 0 0;font-size:15px;letter-spacing:0.3px;color:var(--accent);opacity:.95;
+    font-weight:600;
+  }
+  .role-note{margin:6px 0 0;font-size:15px;color:var(--text-dim);font-style:italic}
+  ul.role-bullets{margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;max-width:80ch}
+  ul.role-bullets li{position:relative;padding-left:20px;font-size:17px;line-height:1.6;color:var(--text);opacity:.92}
+  ul.role-bullets li::before{
+    content:"";position:absolute;left:2px;top:10px;width:6px;height:6px;border-radius:2px;
+    background:var(--accent);opacity:.8;
+  }
+
+  /* anchor link on headings */
+  .hlink{
+    text-decoration:none;color:var(--accent);opacity:0;font-weight:600;font-size:0.7em;
+    border:0;transition:opacity .18s ease;transform:translateY(-1px);
+  }
+  h2.title:hover .hlink,.sub h3:hover .hlink,.hlink:focus{opacity:.85}
+  .hlink:hover{opacity:1}
+
+  /* domain grid */
+  .domain-grid{
+    margin-top:22px;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+    background:var(--hair-soft);border:1px solid var(--hair-soft);border-radius:12px;overflow:hidden;
+  }
+  .domain{background:var(--bg);padding:18px 20px}
+  .domain h4{margin:0 0 6px;font-size:16.5px;font-weight:600;color:var(--text-strong);letter-spacing:0.1px}
+  .domain p{margin:0;font-size:15px;line-height:1.55;color:var(--text-dim)}
+
+  /* earlier roles */
+  ul.earlier{margin:18px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:18px;max-width:80ch}
+  ul.earlier li{border-left:2px solid var(--hair);padding:2px 0 2px 16px}
+  ul.earlier .e-head{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+  ul.earlier .e-role{font-weight:600;color:var(--text-strong);font-size:17px}
+  ul.earlier .e-org{color:var(--accent);font-size:15px;font-weight:600}
+  ul.earlier .e-date{color:var(--text-dim);font-size:13.5px;letter-spacing:0.3px;margin-left:auto}
+  ul.earlier p{margin:5px 0 0;font-size:15.5px;line-height:1.55;color:var(--text);opacity:.85}
+
+  /* skills */
+  .skills{margin-top:20px;display:flex;flex-direction:column;gap:20px}
+  .skill-group .overline{
+    font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+    color:var(--text-dim);margin:0 0 9px;
+  }
+  ul.tags{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  ul.tags li{
+    font-size:14.5px;color:var(--text);background:var(--tag-bg);
+    border:1px solid var(--hair);border-radius:999px;padding:5px 13px;letter-spacing:0.2px;
+  }
+
+  /* education */
+  #exp-education p{max-width:74ch;font-size:17px;line-height:1.7;color:var(--text);opacity:.92}
+  #exp-education .overline{
+    font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+    color:var(--text-dim);margin:22px 0 10px;
+  }
+  ul.awards{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;max-width:74ch}
+  ul.awards li{position:relative;padding-left:18px;font-size:16px;line-height:1.5;color:var(--text);opacity:.9}
+  ul.awards li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:2px;background:var(--accent);opacity:.75}
+
+  /* contact block on overview */
+  .contact{margin-top:34px;display:flex;flex-direction:column;gap:10px}
+  .contact .label{font-size:12.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);font-weight:700}
+  .contact p{margin:0;font-size:17.5px;line-height:1.6;color:var(--text);opacity:.92;max-width:66ch}
 
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-  /* ---- Narrow screens: nav collapses to a top bar ---- */
-  @media (max-width:720px){
-    body{overflow:auto}
-    .app{flex-direction:column;height:auto;min-height:100vh}
-    .nav{flex:0 0 auto;flex-direction:row;align-items:center;gap:16px;
-         padding:14px 16px;border-right:none;border-bottom:1px solid var(--hair);
-         overflow-x:auto;position:sticky;top:0}
-    .brand{margin:0 8px 0 0;flex:0 0 auto}
-    .brand .tag,.nav .foot{display:none}
-    .brand .mark{font-size:20px}
-    .menu{flex-direction:row;gap:2px}
-    .menu button{padding:8px 10px;white-space:nowrap}
-    .menu button .idx{display:none}
-    .stage{min-height:calc(100vh - 56px)}
-    .pane{position:relative;inset:auto;opacity:1;visibility:visible;overflow:visible}
-    /* on mobile, panes stack is unnecessary — show only the active one */
-    .pane:not(.is-active){display:none}
-    #gl{display:none}
+  /* ---- Narrow screens: nav collapses to a sticky top bar ---- */
+  @media (max-width:820px){
+    .nav{
+      position:sticky;top:0;left:0;width:100%;height:auto;flex-direction:row;align-items:center;gap:14px;
+      padding:10px 14px;border-right:none;border-bottom:1px solid var(--hair);
+    }
+    .brand{margin:0 6px 0 0}
+    .brand .tag{display:none}
+    .brand .mark{font-size:22px}
+    .menu{
+      flex-direction:row;gap:2px;padding:0;overflow-x:auto;overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .menu::-webkit-scrollbar{display:none}
+    .nav-top > button{white-space:nowrap;padding:8px 12px;border-left:0;border-bottom:2px solid transparent;border-radius:7px}
+    .nav-top > button[aria-current]{border-left:0;border-bottom-color:var(--accent);background:var(--accent-soft)}
+    .nav-sub{display:none}       /* subitems tracked by scroll; not shown in the bar */
+    .nav .foot{flex:0 0 auto;margin-top:0;padding-top:0;border-top:none}
+    .foot-url{display:none}      /* keep the toggle; drop the URL text in the bar */
+    .theme-toggle .tlabel{display:none}   /* icon-only in the top bar */
+    .theme-toggle{padding:7px 9px}
+    .main{margin-left:0}
+    .content{padding:clamp(32px,5vh,56px) clamp(20px,6vw,40px) 50vh;max-width:none}
+    .sect{scroll-margin-top:calc(var(--topbar-h) + 12px)}
+    .sub{scroll-margin-top:calc(var(--topbar-h) + 12px)}
+    .domain-grid{grid-template-columns:1fr}
+    .hlink{opacity:.55}          /* no hover on touch — keep anchors reachable */
   }
+
   @media (prefers-reduced-motion: reduce){
-    .pane,.pane.is-active{transition:opacity .2s ease}
+    html{scroll-behavior:auto}
+    .nav-sub{transition:none}
   }
 </style>
 </head>
 <body>
-<div class="app">
-  <nav class="nav" aria-label="Primary">
-    <div class="brand">
-      <a class="mark" href="#overview">Jason&nbsp;<em>Epel</em></a>
-      <div class="tag">Personal site — notes, work, and how to reach me.</div>
-    </div>
-    <ul class="menu" id="menu"></ul>
-    <div class="foot">jason.epel.us</div>
-  </nav>
+<a class="skip" href="#overview">Skip to content</a>
 
-  <main class="stage" id="stage">
-    <canvas id="gl" aria-hidden="true"></canvas>
-    <div class="panes" id="panes">
+<nav class="nav" aria-label="Primary">
+  <div class="brand">
+    <a class="mark" href="#overview">Jason&nbsp;<em>Epel</em></a>
+    <div class="tag">Engineering &amp; technology leadership — SaaS, cloud, data &amp; AI.</div>
+  </div>
+  <ul class="menu" id="menu"></ul>
+  <div class="foot">
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch color theme"></button>
+    <span class="foot-url">jason.epel.us</span>
+  </div>
+</nav>
 
-      <!-- Default tab. NOTE: placeholder copy — real Overview content is task #3 (confirm with Jason). -->
-      <article class="pane" id="page-overview" data-page="overview" data-label="Overview" tabindex="-1" aria-labelledby="h-overview">
-        <div class="pane-inner">
-          <p class="eyebrow">Overview</p>
-          <h1 id="h-overview">Hello — I&rsquo;m Jason Epel.</h1>
-          <hr class="rule">
-          <div class="body">
-            <p class="lead">This is my corner of the web: a small, deliberately quiet place for what I&rsquo;m working on and thinking about.</p>
-            <p>I build software and the teams that ship it. This page is the front door; the tabs to the left will grow over time to cover my work, a proper CV, and the occasional writing.</p>
-            <p><em>(Placeholder introduction — to be replaced with real copy.)</em></p>
-          </div>
+<main class="main" id="main">
+  <div class="content">
+
+    <!-- ============================ OVERVIEW ============================ -->
+    <section class="sect" id="overview" data-label="Overview" tabindex="-1">
+      <p class="eyebrow">Overview</p>
+      <h1 class="hero">Jason&nbsp;<em>Epel</em></h1>
+      <p class="subtitle">VP of Engineering &amp; Technology at eSUB · SaaS, Cloud, Data &amp; AI · Scaling high-performing engineering organizations</p>
+      <hr class="rule">
+      <div class="body">
+        <p class="lead">I lead engineering and technology organizations that ship durable software and run the systems a modern company depends on. As VP of Engineering &amp; Technology at eSUB, I own the software, cloud, data, and IT functions behind a construction SaaS platform used by subcontractors across the United States and Canada.</p>
+        <p>Over nearly seven years at eSUB I have grown from Senior Manager to Director to VP, expanding scope from a single product team to the full engineering organization and the business systems that support sales, finance, security, and operations. I set the technical strategy and drove the execution behind our modernization on AWS, where my teams delivered a stack built on React, React Native, serverless services, and streaming data, along with the analytics and BI foundation that turns product data into decisions.</p>
+        <p>My background spans SaaS, mobile, public and private APIs, and cloud infrastructure across AWS, Azure, and GCP, across construction, medical and biotech, financial services, higher education, legal, government, and ecommerce. I am also an Agile practitioner and coach who has introduced and scaled Scrum and Kanban across multiple companies, moving teams from waterfall to predictable, quality-first delivery.</p>
+        <p>Most recently I have led our adoption of AI, working hands-on with Claude Code alongside my team to build internal AI services, developer tooling, and automation that change how we deliver. I care about clear priorities, healthy teams, and technology that earns its keep.</p>
+      </div>
+
+      <div class="contact">
+        <span class="label">Get in touch</span>
+        <p>Connect with me on <a class="link" href="https://www.linkedin.com/in/jasonepel" target="_blank" rel="noopener">linkedin.com/in/jasonepel</a>, or use the chat bubble in the corner to message me directly.</p>
+      </div>
+    </section>
+
+    <!-- ============================ EXPERIENCE ============================ -->
+    <section class="sect" id="experience" data-label="Experience" tabindex="-1">
+      <p class="eyebrow">Experience</p>
+      <h2 class="title">Experience<a class="hlink" href="#experience" aria-label="Link to Experience">#</a></h2>
+      <p class="sect-intro" style="margin-top:18px">A leadership career across software, cloud, data, quality, security, and enterprise IT — from the current VP role back through three decades of building and running engineering teams and systems.</p>
+
+      <!-- What I do / domains -->
+      <div class="sub" id="exp-domains" data-label="What I do">
+        <h3>What I do<a class="hlink" href="#exp-domains" aria-label="Link to What I do">#</a></h3>
+        <p class="sect-intro" style="margin-top:12px">Ten domains I have led and delivered in, from executive technology leadership to hands-on architecture.</p>
+        <div class="domain-grid">
+          <div class="domain"><h4>Engineering Leadership &amp; Organization</h4><p>Building and leading distributed engineering organizations: hiring, managing managers and individual contributors, org design, and executive technology leadership.</p></div>
+          <div class="domain"><h4>Software Engineering &amp; Architecture</h4><p>Full-stack product development and application architecture across web, mobile, and API, including hands-on development.</p></div>
+          <div class="domain"><h4>Agile Delivery &amp; Scrum Transformation</h4><p>Agile coaching, ScrumMaster practice, waterfall-to-Agile transformations, release management, and backlog and sprint process.</p></div>
+          <div class="domain"><h4>Cloud, DevOps &amp; Infrastructure</h4><p>Multi-cloud platforms, CI/CD, DevSecOps, observability, and release engineering.</p></div>
+          <div class="domain"><h4>Data Engineering, Analytics &amp; BI</h4><p>Data pipelines, warehousing, and business intelligence.</p></div>
+          <div class="domain"><h4>Quality Assurance &amp; Test Engineering</h4><p>QA leadership, test automation, and test and defect management.</p></div>
+          <div class="domain"><h4>Security</h4><p>Application and infrastructure security: mobile device management, secure messaging, DevSecOps, certificate authority, firewalls, and VPN.</p></div>
+          <div class="domain"><h4>Enterprise IT, Systems &amp; Messaging</h4><p>Directory, messaging, and network infrastructure administration and systems engineering.</p></div>
+          <div class="domain"><h4>Program &amp; Project Management</h4><p>Program and project delivery, disaster recovery planning, budgeting, and documentation.</p></div>
+          <div class="domain"><h4>Developer Tooling &amp; Platform Administration</h4><p>Administration of engineering tooling (Atlassian suite, source control) and system integrations.</p></div>
         </div>
-        <div class="numeral" aria-hidden="true">1</div>
+      </div>
+
+      <!-- eSUB -->
+      <article class="sub role" id="exp-esub" data-label="eSUB">
+        <h3>VP, Engineering &amp; Technology<a class="hlink" href="#exp-esub" aria-label="Link to eSUB">#</a></h3>
+        <p class="role-meta">eSUB Construction Software · Nov 2019 – Present · Remote (US)</p>
+        <p class="role-note">Senior Manager (2019) → Director (2023) → VP (2025).</p>
+        <ul class="role-bullets">
+          <li>Lead a 22-person, four-country engineering organization (US, Mexico, Colombia, Poland), now fully remote, setting strategy across software, cloud, data, security, and business systems for eSUB's construction SaaS portfolio.</li>
+          <li>Direct the teams delivering eSUB Fusion and eSUB Classic, their iOS/Android apps, and ERP integrations including the Windows eSUB Connector for Sage 100/300; work directly with the team to choose, build, maintain, scale, and upgrade third-party integrations that extend product functionality without building every capability in-house.</li>
+          <li>Set technical direction for a modern AWS stack (React, React Native, serverless APIs, streaming data) and the analytics/BI foundation that turns data into decisions.</li>
+          <li>Stay hands-on in DevSecOps and cloud operations across AWS, Azure, and GCP, balancing modern services with legacy platforms.</li>
+          <li>Triage customer escalations personally, engaging through support to remediate issues and balancing escalation response against roadmap commitments to keep releases on schedule.</li>
+          <li>Lead adoption of generative AI (Claude) across eSUB, from rolling out Claude for Work with Microsoft 365 to running an internal AI enablement hub and workshop program.</li>
+          <li>Work hands-on with Claude Code alongside the team on internal MCP API services, an AWS Bedrock customer-issue triage agent, developer tooling, and automation, setting guardrails for AI-assisted engineering.</li>
+          <li>Run production operations and reliability for the SaaS portfolio, including observability and alerting (Datadog, CloudWatch, Lumigo) and feature-flagged delivery with LaunchDarkly.</li>
+          <li>Own the business technology stack (CRM, ERP, accounting, IT, security, customer-health tooling) supporting sales, finance, marketing, and operations.</li>
+        </ul>
       </article>
 
-      <article class="pane" id="page-contact" data-page="contact" data-label="Contact" tabindex="-1" aria-labelledby="h-contact">
-        <div class="pane-inner">
-          <p class="eyebrow">Contact</p>
-          <h2 class="title" id="h-contact">Say hello.</h2>
-          <hr class="rule">
-          <div class="body">
-            <p class="lead">The best way to reach me is by email.</p>
-            <p><a href="/cdn-cgi/l/email-protection#741e34110411185a0107"><span class="__cf_email__" data-cfemail="90fad0f5e0f5fcbee5e3">[email&#160;protected]</span></a></p>
-            <p><em>(Placeholder — links and details to be finalized.)</em></p>
-          </div>
-        </div>
-        <div class="numeral" aria-hidden="true">2</div>
+      <!-- Kibo -->
+      <article class="sub role" id="exp-kibo" data-label="Kibo Commerce">
+        <h3>Manager, Software Engineering / IT Enterprise Projects<a class="hlink" href="#exp-kibo" aria-label="Link to Kibo Commerce">#</a></h3>
+        <p class="role-meta">Kibo Commerce (formerly Certona) · Nov 2018 – Nov 2019</p>
+        <p class="role-note">Joined via Kibo Commerce's acquisition of Certona, continuing to lead the personalized-search and predictive-analytics team through the transition.</p>
+        <ul class="role-bullets">
+          <li>Led a 4-person team developing a personalized search API paired with Certona's proprietary ML/AI predictive analytics services.</li>
+          <li>Administered Azure AD and on-prem Active Directory environments, plus Windows Server 2012/2016 infrastructure, and Office 365 tenants including Exchange Online integration with the Marketing and Sales CRM products.</li>
+          <li>Consolidated and migrated Jira, Confluence, and SharePoint (Online and on-premise) across four implementations, configuring custom workflows and third-party integrations, and implemented Atlassian Service Desk as the team's help desk platform.</li>
+          <li>Consolidated source control across Azure DevOps and a pseudo on-premises Bitbucket/GitHub Enterprise installation hosted in AWS.</li>
+          <li>Introduced Docker and Terraform for GCP development and deployment, supported Jenkins CI/CD, and wrote Bash scripts to automate Linux VM and Docker container administration.</li>
+          <li>Served as Scrum Master, coaching the team on story-point estimation, risk management, technical-debt budgeting, and in-sprint backlog prioritization.</li>
+        </ul>
       </article>
 
-    </div>
-    <p class="sr-only" id="live" aria-live="polite"></p>
-  </main>
-</div>
+      <!-- BioTelemetry -->
+      <article class="sub role" id="exp-biotel" data-label="BioTelemetry">
+        <h3>Director, Engineering R&amp;D<a class="hlink" href="#exp-biotel" aria-label="Link to BioTelemetry">#</a></h3>
+        <p class="role-meta">BioTelemetry · Jun 2017 – Oct 2018</p>
+        <ul class="role-bullets">
+          <li>Led a global, 17-person R&amp;D QA software and hardware engineering team delivering proprietary BioTel products across web, mobile, firmware, and hardware enhancements, and ran DevOps activities within the R&amp;D division.</li>
+          <li>Purchased, configured, implemented, trained, and supported the Atlassian cloud portfolio — Jira Software (Scrum and Kanban across DevOps, support, and development teams), Jira Service Desk, and Confluence — and consolidated Jira Cloud instances following a merger/acquisition.</li>
+          <li>Transformed software engineering teams from waterfall to an Agile Scrum framework, resulting in faster, higher-quality releases, reduced time to market, and more on-time deliveries.</li>
+          <li>Introduced lean Agile testing practices to test incremental builds and catch bugs early while developers were still in the code, reducing technical debt and related risk.</li>
+          <li>Provided ongoing Agile Scrum training and coaching to the entire engineering team and to new Scrum Masters.</li>
+        </ul>
+      </article>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+      <!-- SmartDrive -->
+      <article class="sub role" id="exp-smartdrive" data-label="SmartDrive">
+        <h3>Director, Software Engineering<a class="hlink" href="#exp-smartdrive" aria-label="Link to SmartDrive">#</a></h3>
+        <p class="role-meta">SmartDrive Systems · May 2016 – May 2017</p>
+        <ul class="role-bullets">
+          <li>Led a 6-person QA engineering team responsible for testing proprietary webapp, API, and BI software, plus firmware for the company's vehicle-telemetry hardware products.</li>
+          <li>Implemented Agile Scrum and coached the Scrum Masters, facilitating and coaching Scrum activities as needed.</li>
+          <li>Directed code and test-process improvements on Microsoft Visual Studio Team Foundation Server 2013: improved processes and data management for bugs and test cases, monitored and reviewed C# builds, reviewed code changes for risk assessment to focus testing, and used MTM for test-case management and execution.</li>
+          <li>Mentored engineers with strategic and tactical coaching on risk management for delivery schedules, code quality, and early bug detection.</li>
+        </ul>
+      </article>
+
+      <!-- BlackBerry -->
+      <article class="sub role" id="exp-blackberry" data-label="BlackBerry / Good">
+        <h3>Manager, Software Engineering, QA<a class="hlink" href="#exp-blackberry" aria-label="Link to BlackBerry">#</a></h3>
+        <p class="role-meta">BlackBerry (formerly Good Technology) · May 2012 – May 2016</p>
+        <p class="role-note">Joined via BlackBerry's acquisition of Good Technology, continuing to lead mobile device management and secure mobile engineering through the transition.</p>
+        <ul class="role-bullets">
+          <li>Led a 7-person full-stack engineering team building proprietary mobile device management, secure mobile email, and secure instant messaging applications, plus SDK/platform code used by third-party BYOD apps on iOS and Android.</li>
+          <li>Created, administered, and supported Windows infrastructure in ESX lab environments: Windows Server 2008–2012 R2 (Certificate Authority, DNS, DFS, and other roles; single and multiple forests with trusts) and Exchange (2007, 2010, 2013).</li>
+          <li>Stood up and supported unified-communications platforms: Lync (2010, 2013), Skype for Business (2015), Domino 8.5.2+, Sametime 8.5.2+ in AD- and Domino-integrated deployments, and Cisco Unified Messaging and IM/P virtual appliances.</li>
+          <li>Owned budgeting for the lab and messaging infrastructure, covering upfront and ongoing hardware and software costs.</li>
+          <li>Performed Scrum Master duties: sprint management and reporting; facilitating stand-ups, grooming, planning, retros, and bug triage; unblocking resources; and managing dependency and release risk with QA, development, and IT leads.</li>
+          <li>Managed Agile releases in Jira and Rally, test-case management in TestRail, and defect management across releases including customer-reported issues; maintained knowledge-base documentation in Confluence.</li>
+        </ul>
+      </article>
+
+      <!-- Shopzilla -->
+      <article class="sub role" id="exp-shopzilla" data-label="Shopzilla">
+        <h3>Manager, Software Engineering<a class="hlink" href="#exp-shopzilla" aria-label="Link to Shopzilla">#</a></h3>
+        <p class="role-meta">Shopzilla · Jul 2008 – May 2012 · San Diego &amp; Los Angeles</p>
+        <ul class="role-bullets">
+          <li>Led a 6-person full-stack engineering team (San Diego and Los Angeles) for shopzilla.com and related sites, spanning presentation, middle-tier, and back-end API services, including SQL, NoSQL, and BI data processing.</li>
+          <li>Led engineering teams to maintain and improve product and process quality across a service-oriented architecture spanning shopzilla.com, bizrate.com, tada.com, beso.com, and international sites.</li>
+          <li>Created test plans and verified new iOS applications, tracking incremental feature introduction through Agile Scrum, and worked with teams to implement Kanban, TDD, and BDD practices.</li>
+          <li>Performed risk assessment and managed test plans using black-box, gray-box, and white-box techniques for front-end web clients and mobile apps (iPhone, iPad, iPod).</li>
+          <li>Researched and led projects that implemented lower-cost, higher-efficiency business solutions and processes, and managed deployments of scalable web applications and services through an Agile process.</li>
+          <li>Tested Tomcat web applications, RESTful web services, Oracle Coherence Grid, Oracle Database, and Sybase on CentOS, and performed SEM/SEO testing and analysis for changes impacting crawler traffic from Google, Yahoo, and Bing.</li>
+        </ul>
+      </article>
+
+      <!-- Pima County -->
+      <article class="sub role" id="exp-pima" data-label="Pima County Court">
+        <h3>Manager, IT<a class="hlink" href="#exp-pima" aria-label="Link to Pima County">#</a></h3>
+        <p class="role-meta">Pima County Consolidated Justice Court · Jan 2007 – Jun 2008 · Arizona</p>
+        <ul class="role-bullets">
+          <li>Led an 8-person software engineering and support team (6 Programmer Analysts, 1 Systems Administrator, 1 Help Desk) responsible for the court's Case Management System and its integration with county, state, and law-enforcement systems.</li>
+          <li>Led development groups building n-tier web (HTML, ASP, PHP) and PC applications (VB.NET 1.1/2.0 and VB6) on IIS across three database backends: SQL 2005 on Windows 2003, MySQL on Linux, and RMS/DataTrieve on VMS.</li>
+          <li>Managed enterprise, large, medium, and small-scale projects tied to court strategic objectives; established an SDLC process; and performed gap analysis with functional specifications and project documentation.</li>
+          <li>Supported and expanded a Cisco network environment: internal and external DNS, multi-zone DHCP, VLAN troubleshooting, Cisco ASA and WatchGuard firewalls (including VPN), and Exchange 2003 email.</li>
+          <li>Created the help desk process (Numara Track-It), authored project and disaster-recovery documentation, and created and managed the court technology budget, including Pima County and Arizona state funds and grants.</li>
+          <li>Performed production QA for services and applications used by the public (1,000,000+ users), justice partners, and internal customers, and served on State of Arizona committees, including the Judicial Technology Advisory Council.</li>
+        </ul>
+      </article>
+
+      <!-- Laureate -->
+      <article class="sub role" id="exp-laureate" data-label="Laureate Education">
+        <h3>Manager, IT and Software Engineering<a class="hlink" href="#exp-laureate" aria-label="Link to Laureate">#</a></h3>
+        <p class="role-meta">Laureate Education, Inc. · May 2003 – Dec 2006 · Los Angeles, CA &amp; Baltimore, MD</p>
+        <p class="role-note">Joined Canter &amp; Associates, later acquired by Sylvan Learning Systems; in 2003 Sylvan's higher-education business was renamed Laureate Education, Inc., where this role continued through 2006.</p>
+        <ul class="role-bullets">
+          <li>Led a new unified corporate systems architecture and integration strategy, managing the projects that unified the organization's technologies, and documented the resulting procedures, standards, and end-user documentation.</li>
+          <li>Designed and implemented a new Lotus Notes/Domino R6 architecture, upgrading R5 domains in Los Angeles and Baltimore, and built Windows 2003 test/QA servers for Domino/Lotus Notes development.</li>
+          <li>Consolidated R5 and R6 Domino domains routing email for 100,000+ accounts (students, faculty, staff, corporate) across 30+ domains, and administered Exchange and AD DNS across 20+ domains plus backup services.</li>
+          <li>Administered messaging infrastructure for 60,000+ accounts across laureate-inc.com, waldenu.edu, and ntu.edu, spanning Los Angeles, Minneapolis, and Baltimore.</li>
+          <li>Designed and built BlackBerry Enterprise Server (3.6/4.0), Sametime, and an SMTP gateway; implemented Postini antispam and BlueCoat DMZ reverse-proxy servers for webmail.</li>
+          <li>Supported seven integrated messaging environments (Lotus Notes R4.6–R6.5, Exchange 5.5/2003, Sendmail on SunOS), trained admin and help-desk staff, and supported the Altiris help-desk rollout.</li>
+        </ul>
+      </article>
+
+      <!-- Fiserv -->
+      <article class="sub role" id="exp-fiserv" data-label="Fiserv">
+        <h3>Infrastructure Engineer, Lotus Notes Systems Architect<a class="hlink" href="#exp-fiserv" aria-label="Link to Fiserv">#</a></h3>
+        <p class="role-meta">Fiserv, CBS Worldwide · Oct 1999 – Mar 2003 · Global (Singapore, Sydney, London)</p>
+        <ul class="role-bullets">
+          <li>Principal Certified Lotus Notes Administrator and Developer (R5) supporting a global Lotus Notes infrastructure spanning offices in Singapore, Sydney, and London.</li>
+          <li>Built QA certification and load-testing n-tier environments (IBM WebSphere, Java, IBM AS/400, MS SQL 2000, IIS, and .NET) for proprietary software products.</li>
+          <li>Designed the global business infrastructure plan, standards, and resourcing, along with a new global R5 infrastructure and project plan, and traveled to manage and support project staff through the R4-to-R5 upgrade and Notes domain consolidation.</li>
+          <li>Converted paper- and email-based development and support processes to online collaborative workflows, designing and developing Lotus Notes applications.</li>
+          <li>Evaluated and implemented server- and client-side configuration and database-design changes to improve performance, optimize resource utilization, and minimize bandwidth usage.</li>
+        </ul>
+      </article>
+
+      <!-- Earlier roles -->
+      <div class="sub" id="exp-earlier" data-label="Earlier roles">
+        <h3>Earlier roles<a class="hlink" href="#exp-earlier" aria-label="Link to Earlier roles">#</a></h3>
+        <ul class="earlier">
+          <li>
+            <div class="e-head"><span class="e-role">Developer</span><span class="e-org">Chep USA</span><span class="e-date">May 1998 – Oct 1999</span></div>
+            <p>Built Lotus Notes business applications (Service Request and Employee Profile systems) that reduced cost and improved performance, and led Notes administration with a focus on database security and auditing.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Developer</span><span class="e-org">Darden Restaurants</span><span class="e-date">Mar 1997 – May 1998</span></div>
+            <p>Designed, coded, and supported legal dispute resolution, competition management, and product tracking systems on newer Lotus Notes technology, managing projects via workflow and Notes mail.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Network Engineer &amp; Systems Administrator</span><span class="e-org">Time Warner Cable — Full Service Network</span><span class="e-date">Mar 1996 – Mar 1997</span></div>
+            <p>Network engineering and systems administration for Time Warner Cable's Full Service Network.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Systems Analyst, Developer, Systems Administrator</span><span class="e-org">Computer Powergroup</span><span class="e-date">Sep 1995 – Feb 1996</span></div>
+            <p>Systems analysis, development, and administration for business clients.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Technical Liaison / Lotus Notes Developer</span><span class="e-org">Westinghouse Electric</span><span class="e-date">Aug 1994 – Dec 1995</span></div>
+            <p>Lotus Notes development and technical liaison work; recognized with a "Total Quality" award in Communications.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Computer Consultant</span><span class="e-org">Oviedo Family Health Center</span><span class="e-date">Aug 1989 – Jun 2002</span></div>
+            <p>Long-running part-time engagement (concurrent with full-time roles): software, systems, and network support for a medical practice.</p>
+          </li>
+          <li>
+            <div class="e-head"><span class="e-role">Systems Engineer (freelance)</span><span class="e-org">Freelance Computer Consulting</span><span class="e-date">1982 – 1999</span></div>
+            <p>Part-time freelance systems, network, and small-business technology consulting, concurrent with full-time roles.</p>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Skills -->
+      <div class="sub" id="exp-skills" data-label="Skills">
+        <h3>Skills<a class="hlink" href="#exp-skills" aria-label="Link to Skills">#</a></h3>
+        <p class="sect-intro" style="margin-top:12px">A selected view across the areas I lead and build in.</p>
+        <div class="skills">
+          <div class="skill-group">
+            <p class="overline">Leadership &amp; People</p>
+            <ul class="tags"><li>Engineering leadership</li><li>Distributed &amp; remote teams</li><li>People management</li><li>Mentoring &amp; coaching</li><li>Executive communication</li><li>Strategic planning</li><li>AI adoption</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Agile &amp; Delivery</p>
+            <ul class="tags"><li>Scrum</li><li>Kanban</li><li>Agile transformation</li><li>Agile coaching</li><li>ScrumMaster</li><li>Product ownership</li><li>Roadmap &amp; backlog</li><li>Release management</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Software Engineering</p>
+            <ul class="tags"><li>Full-stack development</li><li>Application architecture</li><li>REST &amp; GraphQL APIs</li><li>Web</li><li>iOS &amp; Android</li><li>SaaS</li><li>Service-oriented architecture</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Languages &amp; Frameworks</p>
+            <ul class="tags"><li>TypeScript</li><li>Node.js</li><li>Python</li><li>React</li><li>React Native</li><li>C# / .NET</li><li>PowerShell</li><li>Shell scripting</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Cloud &amp; DevOps</p>
+            <ul class="tags"><li>AWS</li><li>Azure</li><li>GCP</li><li>Serverless &amp; Lambda</li><li>DynamoDB</li><li>CI/CD</li><li>Docker</li><li>Terraform</li><li>CloudFormation &amp; CDK</li><li>Observability</li><li>LaunchDarkly</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Data &amp; Analytics</p>
+            <ul class="tags"><li>Data pipelines</li><li>Streaming (Kinesis, EventBridge)</li><li>Redshift</li><li>SQL Server</li><li>BI &amp; data marts</li><li>Tableau</li><li>Delta Lake</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Quality &amp; Test</p>
+            <ul class="tags"><li>QA leadership</li><li>Test automation</li><li>Code review</li><li>Risk-based testing</li><li>TDD &amp; BDD</li><li>Cypress &amp; Playwright</li><li>Defect management</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Enterprise IT &amp; Messaging</p>
+            <ul class="tags"><li>Active Directory &amp; Entra ID</li><li>Microsoft 365</li><li>Microsoft Graph</li><li>Exchange</li><li>SharePoint</li><li>Windows Server</li><li>DNS</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Security</p>
+            <ul class="tags"><li>DevSecOps</li><li>MDM &amp; secure mobile</li><li>Least privilege</li><li>Secret management</li><li>Firewalls &amp; VPN</li><li>Certificate authority</li></ul>
+          </div>
+          <div class="skill-group">
+            <p class="overline">Dev Tooling &amp; Integrations</p>
+            <ul class="tags"><li>Jira &amp; Confluence</li><li>GitHub</li><li>Azure DevOps</li><li>Salesforce</li><li>MCP</li><li>Claude Code</li><li>System integration (MuleSoft, Workato)</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education & recognition -->
+      <div class="sub" id="exp-education" data-label="Education">
+        <h3>Education &amp; recognition<a class="hlink" href="#exp-education" aria-label="Link to Education and recognition">#</a></h3>
+        <p><strong>BS, Computer Science (major) and Physics (minor)</strong>, University of Central Florida, 1995. Background studies in psychology, finance, and mathematics.</p>
+        <p class="overline">Certifications &amp; awards</p>
+        <ul class="awards">
+          <li>R6 Certified Lotus Professional (Administration)</li>
+          <li>R5 Principal Certified Lotus Professional (Administration and Development)</li>
+          <li>Management Training, Learning Tree International</li>
+          <li>Fiserv team award — global Lotus Notes upgrade and consolidation</li>
+          <li>Westinghouse "Total Quality" award — Communications</li>
+        </ul>
+      </div>
+
+    </section>
+
+  </div>
+</main>
+
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<script>
 "use strict";
 (function(){
   /* ------------------------------------------------------------------ *
-   * Data-driven nav: every <article class="pane"> becomes a tab, in DOM
-   * order, using its data-label. Add a page later = add a .pane with a
-   * data-page + data-label; the nav and the ripple pick it up for free.
+   * Data-driven two-level nav + scrollspy.
+   *   - Top-level items  = <section class="sect" data-label>
+   *   - Sub items        = .sub[data-label] inside a section
+   * The active heading is the last spy target whose top has crossed a
+   * line near the top of the viewport (deterministic even inside tall
+   * sections — an IntersectionObserver alone can't see line crossings
+   * that happen without a visibility change). A rAF-throttled scroll
+   * listener keeps it cheap.
    * ------------------------------------------------------------------ */
-  const panesEl = document.getElementById("panes");
-  const menuEl  = document.getElementById("menu");
-  const liveEl  = document.getElementById("live");
-  const stage   = document.getElementById("stage");
-  const canvas  = document.getElementById("gl");
-
-  const panes  = Array.from(panesEl.querySelectorAll(".pane"));
-  const labels = panes.map(p => p.dataset.label || p.id);
-  const slugs  = panes.map(p => p.dataset.page || p.id);
-
+  const menuEl = document.getElementById("menu");
+  const liveEl = document.getElementById("live");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const isNarrow = () => window.matchMedia("(max-width:720px)").matches;
-  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const isNarrow = () => window.matchMedia("(max-width:820px)").matches;
 
-  let current = 0;
-  let busy = false;
+  // Build the model from the DOM.
+  const tops = Array.from(document.querySelectorAll(".content > section.sect"));
+  const model = tops.map(t => ({
+    id: t.id, label: t.dataset.label || t.id, el: t,
+    subs: Array.from(t.querySelectorAll(".sub")).map(s => ({
+      id: s.id, label: s.dataset.label || s.id, el: s
+    }))
+  }));
 
-  /* ---- Menu ---- */
+  // Ordered spy targets (document order): each top, then its subs.
+  const spy = [];
+  model.forEach(top => {
+    spy.push({ id: top.id, el: top.el, topId: top.id, subId: null });
+    top.subs.forEach(sub => spy.push({ id: sub.id, el: sub.el, topId: top.id, subId: sub.id }));
+  });
+
+  const btnByTarget = {};   // id -> button element
+
   function buildMenu(){
     menuEl.innerHTML = "";
-    panes.forEach((p, i) => {
+    model.forEach(top => {
       const li = document.createElement("li");
+      li.className = "nav-top";
+      li.dataset.top = top.id;
+
       const b = document.createElement("button");
       b.type = "button";
-      b.dataset.idx = i;
-      b.innerHTML = `<span class="idx">${String(i+1).padStart(2,"0")}</span><span>${labels[i]}</span>`;
-      b.addEventListener("click", e => go(i, e.clientX, e.clientY));
-      li.appendChild(b); menuEl.appendChild(li);
-    });
-    syncMenu();
-  }
-  function syncMenu(){
-    Array.from(menuEl.querySelectorAll("button")).forEach((b,i) => {
-      if(i === current) b.setAttribute("aria-current","page");
-      else b.removeAttribute("aria-current");
-    });
-  }
-  function navEnter(idx){
-    menuEl.classList.add("is-transitioning");
-    Array.from(menuEl.querySelectorAll("button")).forEach((b,i)=>b.classList.toggle("picked", i===idx));
-  }
-  function navExit(){
-    menuEl.classList.remove("is-transitioning");
-    Array.from(menuEl.querySelectorAll("button")).forEach(b=>b.classList.remove("picked"));
-  }
+      b.textContent = top.label;
+      b.addEventListener("click", () => go(top.id));
+      btnByTarget[top.id] = b;
+      li.appendChild(b);
 
-  /* ---- Pane activation (real DOM; a11y-correct) ---- */
-  function activate(idx){
-    panes.forEach((p,i) => {
-      const on = i === idx;
-      p.classList.toggle("is-active", on);
-      if(on){ p.removeAttribute("aria-hidden"); p.removeAttribute("inert"); }
-      else  { p.setAttribute("aria-hidden","true"); p.setAttribute("inert",""); }
-    });
-    current = idx;
-    syncMenu();
-  }
-
-  /* ================================================================== *
-   * WebGL water-ripple — plays over SNAPSHOTS of the outgoing/incoming
-   * panes during a tab change, then the real DOM shows. Adapted from the
-   * sample prototype; textures are DOM snapshots instead of raster pages.
-   * Any failure (no WebGL, snapshot error) falls back to a CSS crossfade,
-   * which is also the prefers-reduced-motion path.
-   * ================================================================== */
-  const gl = (!reduceMotion && !isNarrow())
-    ? (canvas.getContext("webgl", {premultipliedAlpha:false, antialias:true})
-       || canvas.getContext("experimental-webgl"))
-    : null;
-
-  let TEX = null, U = {}, prog = null;
-  if(gl){ try { initGL(); } catch(e){ teardownGL(); } }
-
-  function initGL(){
-    const VERT = `attribute vec2 aPos; varying vec2 vUv;
-      void main(){ vUv = aPos*0.5+0.5; gl_Position = vec4(aPos,0.0,1.0); }`;
-    const FRAG = `
-      precision highp float; varying vec2 vUv;
-      uniform sampler2D uOld, uNew; uniform vec2 uRes, uOrigin;
-      uniform float uTime, uFront, uAmp, uMode, uFade;
-      void main(){
-        float aspect = uRes.x / uRes.y;
-        vec2 p  = vec2(vUv.x*aspect, vUv.y);
-        vec2 po = vec2(uOrigin.x*aspect, uOrigin.y);
-        vec2 dv = p - po; float d = length(dv);
-        vec2 dir = d > 1e-4 ? dv/d : vec2(0.0);
-        if(uMode > 0.5){ gl_FragColor = mix(texture2D(uNew,vUv), texture2D(uOld,vUv), uFade); return; }
-        float edge = 0.055;
-        float oldW = smoothstep(uFront-edge, uFront+edge, d);
-        float band  = exp(-pow((d-uFront)/0.10, 2.0));
-        float phase = d*68.0 - uTime*15.0;
-        float wave  = sin(phase)*0.65 + sin(phase*0.5+1.7)*0.35;
-        float hFront = wave*band;
-        float settle = sin(d*52.0 - uTime*12.0)*exp(-uTime*2.0)*0.5;
-        float field = (hFront + settle) * uAmp;
-        vec2 uvOff = vec2(dir.x/aspect, dir.y) * (field * 0.042);
-        vec4 oldC = texture2D(uOld, vUv + uvOff);
-        vec4 newC = texture2D(uNew, vUv + uvOff*0.7);
-        vec4 col  = mix(newC, oldC, oldW);
-        col.rgb += max(field,0.0) * 0.16 * vec3(0.85,0.95,1.0);
-        float foam = exp(-pow((d-uFront)/0.028, 2.0)) * smoothstep(0.0,0.12,uFront);
-        col.rgb = mix(col.rgb, vec3(0.9,0.97,1.0), foam*0.45*uAmp);
-        gl_FragColor = col;
-      }`;
-    const compile = (type, src) => {
-      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-      if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
-      return s;
-    };
-    prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
-    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link failed");
-    gl.useProgram(prog);
-    const quad = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(prog, "aPos");
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-    ["uOld","uNew","uRes","uOrigin","uTime","uFront","uAmp","uMode","uFade"]
-      .forEach(n => U[n] = gl.getUniformLocation(prog, n));
-    gl.uniform1i(U.uOld, 0); gl.uniform1i(U.uNew, 1);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    TEX = [0,1].map(() => {
-      const t = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      return t;
-    });
-  }
-  function teardownGL(){ try{ if(gl){ /* let context be GC'd */ } }catch(e){} }
-
-  let glW=0, glH=0;
-  function sizeCanvas(){
-    const r = canvas.getBoundingClientRect();
-    glW = Math.max(1, r.width); glH = Math.max(1, r.height);
-    canvas.width = Math.floor(glW*DPR); canvas.height = Math.floor(glH*DPR);
-    if(gl){ gl.viewport(0,0,canvas.width,canvas.height); gl.uniform2f(U.uRes, glW, glH); }
-  }
-
-  /* ---- DOM snapshot -> texture (taint-free: self-hosted fonts inlined) ----
-   * Fonts are inlined as data URIs and there are no cross-origin resources, so the
-   * snapshot canvas is NOT tainted and can be uploaded to WebGL. Two known graceful
-   * degradations (both fall back to the CSS crossfade — never break):
-   *   • Safari/WebKit may rasterize <foreignObject> loaded via img.src as blank; the
-   *     ripple then washes over a solid background colour instead of the content.
-   *   • If a pane ever includes an <img> or other external/binary asset, the canvas
-   *     taints and texImage2D throws -> that transition uses the crossfade instead.
-   * MAINTENANCE: keep pane content self-contained (text; inline any imagery as data
-   * URIs) to preserve the content-refraction ripple.
-   */
-  const SNAP_OVERRIDE =
-    ".pane{position:static!important;inset:auto!important;opacity:1!important;" +
-    "visibility:visible!important;overflow:hidden!important;display:block!important;" +
-    "height:100%!important;transition:none!important}";
-
-  let _fontCSS = null;
-  const PANE_FONTS = [
-    ["Inter","normal",400,"fonts/inter-normal-400.woff2"],
-    ["Inter","normal",600,"fonts/inter-normal-600.woff2"],
-    ["Fraunces","normal",500,"fonts/fraunces-normal-500.woff2"],
-  ];
-  function bufToB64(buf){
-    let s=""; const b=new Uint8Array(buf);
-    for(let i=0;i<b.length;i+=0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i+0x8000));
-    return btoa(s);
-  }
-  async function fontFaceCSS(){
-    if(_fontCSS !== null) return _fontCSS;
-    try{
-      const parts = await Promise.all(PANE_FONTS.map(async ([fam,style,wght,url]) => {
-        const buf = await (await fetch(url, {cache:"force-cache"})).arrayBuffer();
-        return `@font-face{font-family:'${fam}';font-style:${style};font-weight:${wght};`+
-               `src:url(data:font/woff2;base64,${bufToB64(buf)}) format('woff2')}`;
-      }));
-      _fontCSS = parts.join("");
-    }catch(e){ _fontCSS = ""; }
-    return _fontCSS;
-  }
-  // Resolve the vw/vh-driven rules to real pixels from the live DOM so the
-  // snapshot matches the window-based layout (see paneToImage for why).
-  function viewportUnitFix(){
-    const cs = el => el ? getComputedStyle(el) : null;
-    const inner = cs(document.querySelector(".pane-inner"));
-    const title = cs(document.querySelector(".pane h1, .pane h2.title"));
-    const num   = cs(document.querySelector(".pane .numeral"));
-    let out = "";
-    if(inner) out += `.pane-inner{padding:${inner.padding}!important}`;
-    if(title) out += `.pane h1,.pane h2.title{font-size:${title.fontSize}!important}`;
-    if(num)   out += `.pane .numeral{font-size:${num.fontSize}!important;`+
-                     `right:${num.right}!important;bottom:${num.bottom}!important}`;
-    return out;
-  }
-  async function paneToImage(pane, w, h){
-    const clone = pane.cloneNode(true);
-    clone.classList.add("is-active");
-    const siteCSS = document.getElementById("site-css").textContent;
-    const fontCSS = await fontFaceCSS();
-    const xhtml = new XMLSerializer().serializeToString(clone);
-    const bg = getComputedStyle(stage).backgroundColor || "#0B1F2A";
-    // Freeze viewport-relative sizing to the LIVE layout. Inside a rasterized
-    // <foreignObject>, vw/vh resolve to the SVG viewport (the stage-sized texture),
-    // not the window — so 7vw padding, the 5.4vw title, and the 26vw numeral would
-    // render smaller than the real page and the DOM would visibly "pop" to the
-    // correct layout the instant the ripple hands off. Copying the real computed
-    // pixels keeps the snapshot pixel-identical to the final page.
-    const vwFix = viewportUnitFix();
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`+
-      `<foreignObject x="0" y="0" width="${w}" height="${h}">`+
-      `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;background:${bg};overflow:hidden;`+
-        `font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif">`+
-      `<style>${fontCSS}${siteCSS}${SNAP_OVERRIDE}${vwFix}</style>${xhtml}</div>`+
-      `</foreignObject></svg>`;
-    const img = new Image();
-    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-    await img.decode();
-    return img;
-  }
-  async function paneToTexture(pane, unit){
-    const w = Math.max(2, Math.floor(glW)), h = Math.max(2, Math.floor(glH));
-    const cnv = document.createElement("canvas");
-    cnv.width = Math.floor(w*DPR); cnv.height = Math.floor(h*DPR);
-    const ctx = cnv.getContext("2d");
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-    ctx.fillStyle = getComputedStyle(stage).backgroundColor || "#0B1F2A";
-    ctx.fillRect(0,0,w,h);
-    try { ctx.drawImage(await paneToImage(pane, w, h), 0, 0, w, h); }
-    catch(e){ /* keep solid background fill as a graceful degrade */ }
-    gl.activeTexture(gl.TEXTURE0 + unit);
-    gl.bindTexture(gl.TEXTURE_2D, TEX[unit]);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cnv);
-  }
-
-  /* ---- Ripple animation ---- */
-  const smooth01 = (a,b,x) => { const t=Math.min(1,Math.max(0,(x-a)/(b-a))); return t*t*(3-2*t); };
-  let anim = null;
-  function frame(now){
-    if(!anim) return;
-    const t = (now - anim.start)/1000;
-    const dur = anim.duration;
-    const rise = smooth01(0.0, 0.05, t);
-    const fall = 1.0 - smooth01(dur - 0.5, dur, t);
-    gl.uniform1f(U.uMode, 0);
-    gl.uniform2f(U.uOrigin, anim.origin[0], anim.origin[1]);
-    gl.uniform1f(U.uTime, t);
-    gl.uniform1f(U.uFront, anim.speed * t);
-    gl.uniform1f(U.uAmp, rise * fall);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    if(t >= dur){ anim = null; anim_done(); return; }
-    requestAnimationFrame(frame);
-  }
-  let anim_done = () => {};
-
-  /* ---- Crossfade fallback (reduced-motion / no-GL / snapshot failure) ---- */
-  function crossfade(idx){
-    return new Promise(res => {
-      activate(idx);
-      const dur = reduceMotion ? 200 : 340;
-      setTimeout(res, dur);
+      if(top.subs.length){
+        const ul = document.createElement("ul");
+        ul.className = "nav-sub";
+        top.subs.forEach(sub => {
+          const sli = document.createElement("li");
+          const sb = document.createElement("button");
+          sb.type = "button";
+          sb.textContent = sub.label;
+          sb.addEventListener("click", () => go(sub.id));
+          btnByTarget[sub.id] = sb;
+          sli.appendChild(sb);
+          ul.appendChild(sli);
+        });
+        li.appendChild(ul);
+      }
+      menuEl.appendChild(li);
     });
   }
 
-  /* ---- Transition entry point ---- */
-  const syncHash = (push) => {
-    const h = "#" + slugs[current];
-    if(location.hash === h) return;             // already there (e.g. popstate-driven)
-    if(push) history.pushState(null, "", h); else history.replaceState(null, "", h);
-  };
-  async function go(targetIdx, clientX, clientY, push){
-    if(push === undefined) push = true;
-    if(busy || targetIdx === current) return;
-    busy = true;
-    navEnter(targetIdx);
-    liveEl.textContent = "Loading " + labels[targetIdx];
+  /* ---- Active state ---- */
+  let activeId = null;
+  function activeLine(){ return isNarrow() ? 84 : 132; }
 
-    const finish = () => {
-      stage.classList.remove("is-transitioning");
-      navExit(); busy = false;
-      liveEl.textContent = "Now viewing " + labels[current];
-      const pane = panes[current];
-      if(pane && typeof pane.focus === "function") pane.focus({preventScroll:true});
-    };
+  function computeActive(){
+    const line = activeLine();
+    let cur = spy[0];
+    for(const s of spy){
+      if(s.el.getBoundingClientRect().top <= line) cur = s;
+      else break;
+    }
+    return cur;
+  }
 
-    if(!gl || reduceMotion || isNarrow()){
-      await crossfade(targetIdx);
-      finish();
-      syncHash(push);
-      return;
+  function setActive(cur, updateHash){
+    if(cur.id === activeId) return;
+    activeId = cur.id;
+
+    // buttons
+    Object.values(btnByTarget).forEach(b => b.removeAttribute("aria-current"));
+    if(btnByTarget[cur.topId]) btnByTarget[cur.topId].setAttribute("aria-current","true");
+    if(cur.subId && btnByTarget[cur.subId]) btnByTarget[cur.subId].setAttribute("aria-current","true");
+
+    // expand the active top's sub list, collapse the rest
+    Array.from(menuEl.querySelectorAll(".nav-top")).forEach(li => {
+      li.classList.toggle("expanded", li.dataset.top === cur.topId);
+    });
+
+    // keep the active item visible in the (desktop) scrolling menu / (mobile) bar
+    const ab = btnByTarget[cur.subId || cur.topId];
+    if(ab){
+      const r = ab.getBoundingClientRect(), pr = menuEl.getBoundingClientRect();
+      if(r.top < pr.top || r.bottom > pr.bottom || r.left < pr.left || r.right > pr.right){
+        ab.scrollIntoView({block:"nearest", inline:"nearest"});
+      }
     }
 
-    try{
-      sizeCanvas();
-      await paneToTexture(panes[current], 0);   // old
-      await paneToTexture(panes[targetIdx], 1); // new
-    }catch(e){
-      await crossfade(targetIdx);
-      finish();
-      syncHash(push);
-      return;
+    liveEl.textContent = "Section: " + (cur.subId
+      ? (labelOf(cur.topId) + " — " + labelOf(cur.subId))
+      : labelOf(cur.topId));
+
+    if(updateHash){
+      const h = "#" + cur.id;
+      if(location.hash !== h) history.replaceState(null, "", h);
     }
-
-    // Reveal the real target pane underneath, then wash the ripple over the top.
-    activate(targetIdx);
-    stage.classList.add("is-transitioning");
-
-    const rect = canvas.getBoundingClientRect();
-    const ux = clientX==null ? 0.5 : Math.min(1, Math.max(0, (clientX - rect.left)/glW));
-    const uyDown = clientY==null ? 0.5 : Math.min(1, Math.max(0, (clientY - rect.top)/glH));
-    const origin = [ux, 1 - uyDown];
-    const aspect = glW/glH;
-    const ox = origin[0]*aspect, oy = origin[1];
-    let maxD = 0;
-    for(const cx of [0,aspect]) for(const cy of [0,1]) maxD = Math.max(maxD, Math.hypot(cx-ox, cy-oy));
-    const washDur = 0.6;
-    anim = { origin, start: performance.now(), speed: maxD/washDur, duration: washDur + 0.75 };
-    anim_done = () => { finish(); syncHash(push); };
-    requestAnimationFrame(frame);
   }
 
-  /* ---- Routing: direct links + back/forward via #slug ---- */
-  function idxFromHash(){
-    const s = (location.hash || "").replace(/^#/, "");
-    const i = slugs.indexOf(s);
-    return i < 0 ? 0 : i;
+  function labelOf(id){
+    for(const t of model){ if(t.id===id) return t.label;
+      for(const s of t.subs){ if(s.id===id) return s.label; } }
+    return id;
   }
+
+  /* ---- Scroll tracking (rAF-throttled) ---- */
+  let ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      setActive(computeActive(), true);
+      ticking = false;
+    });
+  }
+
+  /* ---- Smooth scroll to a target id ---- */
+  function offsetTop(){ return isNarrow() ? (60 + 12) : 28; }
+  function scrollToId(id, push){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const y = el.getBoundingClientRect().top + window.pageYOffset - offsetTop();
+    window.scrollTo({ top: y, behavior: reduceMotion ? "auto" : "smooth" });
+    if(push){
+      const h = "#" + id;
+      if(location.hash !== h) history.pushState(null, "", h);
+    }
+    // move focus for a11y without yanking the scroll
+    const target = el.hasAttribute("tabindex") ? el : el.querySelector("h1,h2,h3") || el;
+    if(target){
+      target.setAttribute("tabindex", target.hasAttribute("tabindex") ? target.getAttribute("tabindex") : "-1");
+      try{ target.focus({preventScroll:true}); }catch(e){}
+    }
+  }
+
+  function go(id){ scrollToId(id, true); }
+
+  /* ---- Heading anchor links (# on hover) ---- */
+  function wireAnchors(){
+    Array.from(document.querySelectorAll("a.hlink")).forEach(a => {
+      a.addEventListener("click", e => {
+        e.preventDefault();
+        const id = a.getAttribute("href").slice(1);
+        scrollToId(id, true);
+        const url = location.origin + location.pathname + "#" + id;
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(
+            () => { liveEl.textContent = "Link copied"; },
+            () => {}
+          );
+        }
+      });
+    });
+  }
+
+  /* ---- Theme: system detection + on-screen toggle (persisted) ---- */
+  function initTheme(){
+    const root = document.documentElement;
+    const btn = document.getElementById("theme-toggle");
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></svg>';
+    const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>';
+    const stored = () => { try{ return localStorage.getItem("theme"); }catch(e){ return null; } };
+    const resolved = () => { const s = stored(); return (s==="light"||s==="dark") ? s : (mq.matches ? "dark" : "light"); };
+
+    function render(){
+      const target = resolved()==="dark" ? "light" : "dark";   // the mode the button switches TO
+      btn.innerHTML = (target==="light" ? SUN : MOON) +
+        '<span class="tlabel">' + (target==="light" ? "Light" : "Dark") + '</span>';
+      btn.setAttribute("aria-label", "Switch to " + target + " mode");
+      btn.setAttribute("title", "Switch to " + target + " mode");
+    }
+    function apply(){
+      const s = stored();
+      if(s==="light"||s==="dark") root.setAttribute("data-theme", s);
+      else root.removeAttribute("data-theme");   // follow the system
+      render();
+    }
+    btn.addEventListener("click", () => {
+      const next = resolved()==="dark" ? "light" : "dark";
+      try{ localStorage.setItem("theme", next); }catch(e){}
+      apply();
+    });
+    // live-follow the system only while the user hasn't pinned a choice
+    mq.addEventListener("change", () => { if(!stored()) apply(); });
+    apply();
+  }
+
+  /* ---- Routing ---- */
   window.addEventListener("popstate", () => {
-    const i = idxFromHash();
-    if(i !== current) go(i, null, null, false);   // URL already moved; don't push again
+    const id = (location.hash || "").replace(/^#/, "");
+    if(id && document.getElementById(id)) scrollToId(id, false);
+  });
+
+  document.querySelector(".brand .mark").addEventListener("click", e => {
+    e.preventDefault(); go("overview");
+  });
+  document.querySelector(".skip").addEventListener("click", e => {
+    e.preventDefault(); go("overview");
   });
 
   /* ---- Boot ---- */
   function boot(){
     buildMenu();
-    activate(idxFromHash());          // initial view: no ripple
-    if(gl){
-      sizeCanvas();
-      if("ResizeObserver" in window){ new ResizeObserver(sizeCanvas).observe(canvas); }
-      else { window.addEventListener("resize", sizeCanvas); }
-      fontFaceCSS();                  // warm the font cache for the first transition
+    wireAnchors();
+    initTheme();
+    window.addEventListener("scroll", onScroll, { passive:true });
+    window.addEventListener("resize", onScroll, { passive:true });
+
+    const initial = (location.hash || "").replace(/^#/, "");
+    if(initial && document.getElementById(initial)){
+      // let layout settle, then jump to the deep-linked target
+      requestAnimationFrame(() => { scrollToId(initial, false); setActive(computeActive(), false); });
+    } else {
+      setActive(computeActive(), false);
     }
-    liveEl.textContent = "Now viewing " + labels[current];
   }
-  if(document.fonts && document.fonts.ready){
-    Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,1500))]).then(boot);
-  } else boot();
+  boot();
 })();
 </script>
 <script type="text/javascript" src="https://res.public.onecdn.static.microsoft/customerconnect/v1/7dttl/init.js" id="chatbot" environmentId="cc734fba-a619-eb45-a69a-079ec1c89709" region="unitedstates" crossorigin="anonymous"></script>
