@@ -245,6 +245,14 @@
     background:var(--accent);opacity:.8;
   }
 
+  /* AI project entries (reuse .role-meta + .role-bullets) */
+  .proj{margin-top:34px}
+  .sub > .proj:first-of-type{margin-top:22px}
+  .proj > h4{
+    margin:0;font-family:var(--sans);font-weight:600;font-size:19px;line-height:1.3;
+    color:var(--text-strong);letter-spacing:-0.003em;
+  }
+
   /* anchor link on headings */
   .hlink{
     text-decoration:none;color:var(--accent);opacity:0;font-weight:600;font-size:0.7em;
@@ -562,10 +570,73 @@
           </li>
         </ul>
       </div>
+    </section>
 
-      <!-- Skills -->
-      <div class="sub" id="exp-skills" data-label="Skills">
-        <h3>Skills<a class="hlink" href="#exp-skills" aria-label="Link to Skills">#</a></h3>
+    <!-- ============================ AI PROJECTS ============================ -->
+    <section class="sect" id="ai-projects" data-label="AI Projects" tabindex="-1">
+      <p class="eyebrow">AI Projects</p>
+      <h2 class="title">AI Projects<a class="hlink" href="#ai-projects" aria-label="Link to AI Projects">#</a></h2>
+      <p class="sect-intro" style="margin-top:18px">Products and services I have designed and built hands-on with Claude Code — from a shipped native macOS app to full-stack cloud applications and the automation that runs my week.</p>
+
+      <!-- Applications -->
+      <div class="sub" id="ai-apps" data-label="Applications">
+        <h3>Applications<a class="hlink" href="#ai-apps" aria-label="Link to Applications">#</a></h3>
+
+        <article class="proj">
+          <h4>AltWindow</h4>
+          <p class="role-meta">Native macOS app · Swift, SwiftUI &amp; AppKit · <a class="link" href="https://altwindow.com" target="_blank" rel="noopener">altwindow.com</a></p>
+          <ul class="role-bullets">
+            <li>A companion app for Claude Code that renders live Activity and Tasks windows from Claude Code's hook events — reading events only, asynchronously and fail-open, so a companion issue can never cost a coding session.</li>
+            <li>Built in Swift 6 with a pure-logic core behind a SwiftUI and AppKit interface, held to a 100% core-coverage gate, strict formatting, and golden-fixture decoder tests in GitHub Actions CI.</li>
+            <li>Shipped as a free download for Apple silicon with a curl-piped installer and DMG, rolling and versioned releases, and a published project site.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>BBS — serverless bulletin board</h4>
+          <p class="role-meta">Full-stack cloud app · React · AppSync, Lambda &amp; DynamoDB · AWS CDK · Expo</p>
+          <ul class="role-bullets">
+            <li>Designed the architecture and multi-account AWS strategy for a free-tier, serverless bulletin-board system, then scaffolded it across four repositories: web, platform, infrastructure, and mobile.</li>
+            <li>Drove the initial build to green CI/CD across all repos, with cross-repo secret replication and end-to-end test scaffolding.</li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- Tools & automation -->
+      <div class="sub" id="ai-tools" data-label="Tools &amp; automation">
+        <h3>Tools &amp; automation<a class="hlink" href="#ai-tools" aria-label="Link to Tools and automation">#</a></h3>
+
+        <article class="proj">
+          <h4>tasks-sync</h4>
+          <p class="role-meta">Python daemon · Microsoft Graph + Todoist · systemd</p>
+          <ul class="role-bullets">
+            <li>A poll-only daemon that mirrors Microsoft To Do and Microsoft Planner into Todoist across two Microsoft 365 tenants, with cursor-based, incremental, largely two-way sync.</li>
+            <li>Engineered for reliability: loop-prevention so echoes never ping-pong, self-healing delta cursors, isolated multi-instance state, and systemd hardening with staleness alerting.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>Todoist inbox-zero skill</h4>
+          <p class="role-meta">Reusable Claude skill</p>
+          <ul class="role-bullets">
+            <li>An approval-gated skill that triages a Todoist inbox to zero with sync-aware routing rules, a single batch-approval step, and a saved scorecard — encoding a hard no-writes-without-approval rule.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>YNAB budgeting pipeline</h4>
+          <p class="role-meta">Python + REST API · Excel</p>
+          <ul class="role-bullets">
+            <li>A two-way pipeline between a budgeting spreadsheet and the YNAB API, with reconciliation, pre-write confirmation, and a verifiable write log, plus a scheduled automation that mirrors balances between budgets idempotently.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================ SKILLS ============================ -->
+    <section class="sect" id="exp-skills" data-label="Skills" tabindex="-1">
+      <p class="eyebrow">Skills</p>
+      <h2 class="title">Skills<a class="hlink" href="#exp-skills" aria-label="Link to Skills">#</a></h2>
         <p class="sect-intro" style="margin-top:12px">A selected view across the areas I lead and build in.</p>
         <div class="skills">
           <div class="skill-group">
@@ -578,11 +649,11 @@
           </div>
           <div class="skill-group">
             <p class="overline">Software Engineering</p>
-            <ul class="tags"><li>Full-stack development</li><li>Application architecture</li><li>REST &amp; GraphQL APIs</li><li>Web</li><li>iOS &amp; Android</li><li>SaaS</li><li>Service-oriented architecture</li></ul>
+            <ul class="tags"><li>Full-stack development</li><li>Application architecture</li><li>REST &amp; GraphQL APIs</li><li>Web</li><li>iOS &amp; Android</li><li>Native macOS</li><li>SaaS</li><li>Service-oriented architecture</li></ul>
           </div>
           <div class="skill-group">
             <p class="overline">Languages &amp; Frameworks</p>
-            <ul class="tags"><li>TypeScript</li><li>Node.js</li><li>Python</li><li>React</li><li>React Native</li><li>C# / .NET</li><li>PowerShell</li><li>Shell scripting</li></ul>
+            <ul class="tags"><li>TypeScript</li><li>Node.js</li><li>Python</li><li>React</li><li>React Native</li><li>C# / .NET</li><li>Swift &amp; SwiftUI</li><li>PowerShell</li><li>Shell scripting</li></ul>
           </div>
           <div class="skill-group">
             <p class="overline">Cloud &amp; DevOps</p>
@@ -609,11 +680,12 @@
             <ul class="tags"><li>Jira &amp; Confluence</li><li>GitHub</li><li>Azure DevOps</li><li>Salesforce</li><li>MCP</li><li>Claude Code</li><li>System integration (MuleSoft, Workato)</li></ul>
           </div>
         </div>
-      </div>
+    </section>
 
-      <!-- Education & recognition -->
-      <div class="sub" id="exp-education" data-label="Education">
-        <h3>Education &amp; recognition<a class="hlink" href="#exp-education" aria-label="Link to Education and recognition">#</a></h3>
+    <!-- ============================ EDUCATION ============================ -->
+    <section class="sect" id="exp-education" data-label="Education" tabindex="-1">
+      <p class="eyebrow">Education</p>
+      <h2 class="title">Education &amp; recognition<a class="hlink" href="#exp-education" aria-label="Link to Education and recognition">#</a></h2>
         <p><strong>BS, Computer Science (major) and Physics (minor)</strong>, University of Central Florida, 1995. Background studies in psychology, finance, and mathematics.</p>
         <p class="overline">Certifications &amp; awards</p>
         <ul class="awards">
@@ -623,8 +695,6 @@
           <li>Fiserv team award — global Lotus Notes upgrade and consolidation</li>
           <li>Westinghouse "Total Quality" award — Communications</li>
         </ul>
-      </div>
-
     </section>
 
   </div>
