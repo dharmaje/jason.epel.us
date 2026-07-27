@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="stylesheet" href="/fonts.css">
+<title>Exhibit — jason.epel.us</title>
+<!--
+  The standalone viewer for ONE encrypted sidecar image.
+
+      /v/#p=<page-slug>/<blob-id>&code=<ACCESS CODE>
+
+  A gated page's photos are published beside it as individual AES-256-GCM blobs
+  (/p/<slug>/media/<id>.jem) rather than inlined into the encrypted page, so that any
+  single exhibit can be linked to on its own. This page is that link's destination: it
+  fetches one blob, decrypts it with the code from the URL, and shows the image with a
+  Download button — no gate prompt, no page around it. Hand someone this URL and they
+  keep that photo, long after they've closed the record it came from.
+
+  The filename, MIME type and dimensions are encrypted INSIDE the blob, so this page
+  needs nothing but the URL. Decryption is site/media.js (shared with the gated pages).
+-->
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --ink:#0B1F2A; --ink-deep:#06141C; --card:#12303C; --aqua:#5FC7C9;
+    --bone:#DCE7EA; --bone-dim:#8AA0A8; --hair:rgba(220,231,234,.16); --err:#F0A9A0;
+    --fonts:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Fraunces",Georgia,serif;
+    color-scheme:dark;
+  }
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--ink-deep);color:var(--bone);font-family:var(--fonts);
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
+  }
+  /* ---- chrome ---- */
+  .bar{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:12px 18px;background:var(--ink);border-bottom:1px solid var(--hair);
+  }
+  .brand{font-family:var(--serif);font-size:1.05rem;font-weight:500;margin:0;white-space:nowrap}
+  .brand em{font-style:italic;color:var(--aqua)}
+  .tag{
+    font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--bone-dim);border:1px solid var(--hair);border-radius:99px;padding:3px 9px;
+  }
+  .spacer{flex:1}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:.82rem;font-weight:600;
+    color:var(--bone);background:transparent;border:1px solid var(--hair);border-radius:8px;
+    padding:7px 13px;cursor:pointer;text-decoration:none;transition:.15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--aqua);color:var(--aqua)}
+  .btn.primary{background:var(--aqua);border-color:var(--aqua);color:var(--ink-deep)}
+  .btn.primary:hover{background:#7BD6D7;color:var(--ink-deep)}
+  .btn svg{width:15px;height:15px;flex:none}
+  /* ---- stage ---- */
+  main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:20px}
+  #shot{
+    max-width:100%;max-height:100%;display:block;border-radius:10px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.75);cursor:zoom-in;
+  }
+  main.zoom{overflow:auto;align-items:flex-start;justify-content:flex-start}
+  main.zoom #shot{max-width:none;max-height:none;cursor:zoom-out;border-radius:0}
+  /* ---- footer ---- */
+  .foot{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:11px 18px;background:var(--ink);border-top:1px solid var(--hair);
+    font-size:.8rem;color:var(--bone-dim);
+  }
+  .fname{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:var(--bone);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(60vw,640px);
+  }
+  /* ---- messages + code prompt ---- */
+  .panel{
+    background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--aqua);
+    border-radius:12px;max-width:26rem;width:100%;padding:2.25rem 2rem;text-align:center;
+    box-shadow:0 20px 48px rgba(0,0,0,.35);
+  }
+  .panel.bad{border-top-color:var(--err)}
+  .panel h1{font-family:var(--serif);font-size:1.3rem;font-weight:500;margin:0 0 .5rem}
+  .panel p{margin:0 0 1.1rem;font-size:.9rem;color:var(--bone-dim);line-height:1.55}
+  .panel p:last-child{margin-bottom:0}
+  .panel label{display:block;text-align:left;font-size:.82rem;font-weight:600;color:var(--bone);margin:0 0 .4rem}
+  .panel input{
+    width:100%;padding:11px 13px;font-size:1rem;font-family:inherit;color:var(--bone);
+    background:var(--ink);border:1px solid var(--hair);border-radius:8px;outline:none;
+  }
+  .panel input:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(95,199,201,.18)}
+  .panel button{margin-top:1rem;width:100%;justify-content:center;padding:12px 0;font-size:.95rem}
+  .err{min-height:1.1rem;margin:.7rem 0 0;font-size:.85rem;color:var(--err);font-weight:600}
+  .spin{
+    width:22px;height:22px;margin:0 auto .9rem;border-radius:50%;
+    border:2px solid var(--hair);border-top-color:var(--aqua);animation:sp .8s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+  [hidden]{display:none!important}
+  @media (max-width:560px){
+    .fname{max-width:100%}
+    main{padding:10px}
+  }
+</style>
+</head>
+<body>
+
+<header class="bar" id="chrome" hidden>
+  <p class="brand">Jason&nbsp;<em>Epel</em></p>
+  <span class="tag">Exhibit</span>
+  <span class="spacer"></span>
+  <a class="btn" id="record" href="#" hidden>Open the full record</a>
+  <a class="btn primary" id="download" download>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    Download
+  </a>
+</header>
+
+<main id="stage">
+  <div class="panel" id="panel">
+    <div class="spin" id="spin"></div>
+    <h1 id="panel-title">Decrypting…</h1>
+    <p id="panel-msg">Fetching this exhibit and unlocking it in your browser.</p>
+    <form id="ask" hidden autocomplete="off">
+      <label for="code">Access code</label>
+      <input id="code" name="code" type="password" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+      <button class="btn primary" type="submit">Show the photo</button>
+      <p class="err" id="ask-err" role="alert"></p>
+    </form>
+  </div>
+  <img id="shot" alt="" hidden>
+</main>
+
+<footer class="foot" id="foot" hidden>
+  <span class="fname" id="fname"></span>
+  <span class="spacer"></span>
+  <span id="dims"></span>
+</footer>
+
+<script src="/media.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("stage");
+  var panel = document.getElementById("panel");
+  var spin = document.getElementById("spin");
+  var title = document.getElementById("panel-title");
+  var msg = document.getElementById("panel-msg");
+  var ask = document.getElementById("ask");
+  var askErr = document.getElementById("ask-err");
+  var codeInput = document.getElementById("code");
+  var shot = document.getElementById("shot");
+  var chrome = document.getElementById("chrome");
+  var foot = document.getElementById("foot");
+  var fname = document.getElementById("fname");
+  var dims = document.getElementById("dims");
+  var download = document.getElementById("download");
+  var record = document.getElementById("record");
+
+  // ---- what to open, from the hash ---------------------------------------
+  // #p=<slug>/<blob-id>&code=<CODE>   (a bare #<slug>/<blob-id> prompts for the code)
+  function target() {
+    var h = (location.hash || "").replace(/^#/, "");
+    if (!h) return null;
+    var ref = "", code = "";
+    if (h.indexOf("=") !== -1) {
+      try {
+        var q = new URLSearchParams(h);
+        ref = q.get("p") || "";
+        code = q.get("code") || "";
+      } catch (e) { return null; }
+    } else {
+      try { ref = decodeURIComponent(h); } catch (e) { ref = h; }
+    }
+    ref = ref.replace(/^\/+/, "").replace(/^p\//, "");
+    // slug/blob-id — both restricted so the hash can't reach outside /p/.
+    var m = /^([A-Za-z0-9][A-Za-z0-9._-]*)\/([A-Za-z0-9]+)$/.exec(ref);
+    if (!m) return null;
+    return {
+      slug: m[1], id: m[2],
+      url: "/p/" + m[1] + "/media/" + m[2] + ".jem",
+      code: code.replace(/^\s+|\s+$/g, "")
+    };
+  }
+
+  // Keep the code out of the address bar once it has worked (screenshots, screen
+  // sharing, history) — but cache it for this tab so a refresh still works. Same
+  // contract as gate.js, and the same storage key, so unlocking the record in this
+  // tab also unlocks its exhibits.
+  var want = target();
+  var STORAGE_KEY = want ? "jepel-code:/p/" + want.slug + "/" : "";
+
+  function cachedCode() {
+    try { return sessionStorage.getItem(STORAGE_KEY) || ""; } catch (e) { return ""; }
+  }
+  function cacheCode(code) {
+    try { sessionStorage.setItem(STORAGE_KEY, code); } catch (e) {}
+  }
+  function scrubHash() {
+    try {
+      if (location.hash && window.history && history.replaceState) {
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+    } catch (e) {}
+  }
+
+  // ---- panels -------------------------------------------------------------
+  function fail(heading, text) {
+    spin.hidden = true;
+    panel.classList.add("bad");
+    panel.hidden = false;
+    ask.hidden = true;
+    title.textContent = heading;
+    msg.textContent = text;
+  }
+
+  function prompt(errText) {
+    spin.hidden = true;
+    panel.hidden = false;
+    panel.classList.toggle("bad", !!errText);
+    title.textContent = "This exhibit is protected";
+    msg.textContent = "Enter the access code for the record it belongs to.";
+    ask.hidden = false;
+    askErr.textContent = errText || "";
+    codeInput.value = "";
+    codeInput.focus();
+  }
+
+  function show(item, slug) {
+    panel.hidden = true;
+    shot.src = item.url;
+    shot.alt = item.name || "Exhibit photo";
+    shot.hidden = false;
+    fname.textContent = item.name || "";
+    var parts = [];
+    if (item.w && item.h) parts.push(item.w + " × " + item.h);
+    parts.push((item.bytes / 1048576).toFixed(1) + " MB");
+    dims.textContent = parts.join("  ·  ");
+    download.href = item.url;
+    download.setAttribute("download", item.name || "exhibit.jpg");
+    record.href = "/p/" + slug + "/";
+    record.hidden = false;
+    chrome.hidden = false;
+    foot.hidden = false;
+    document.title = (item.name || "Exhibit") + " — jason.epel.us";
+  }
+
+  // Click to inspect at full resolution — these are evidence photos; the whole
+  // reason for a 2560px derivative is being able to zoom into the detail.
+  shot.addEventListener("click", function () {
+    stage.classList.toggle("zoom");
+  });
+
+  // ---- boot ---------------------------------------------------------------
+  function open(code, fromHash) {
+    spin.hidden = false;
+    panel.hidden = false;
+    panel.classList.remove("bad");
+    ask.hidden = true;
+    title.textContent = "Decrypting…";
+    msg.textContent = "Fetching this exhibit and unlocking it in your browser.";
+
+    window.PageMedia.openBlob(want.url, code).then(function (item) {
+      cacheCode(code);
+      if (fromHash) scrubHash();
+      show(item, want.slug);
+    }, function (err) {
+      var kind = (err && err.message) || "";
+      if (kind === "media-missing") {
+        fail("Not found", "There is no exhibit at this link. It may have been "
+          + "replaced or removed — ask for a fresh link.");
+      } else if (kind === "media-version") {
+        fail("Can't open this", "This exhibit was published in a newer format than "
+          + "this viewer understands. Ask for a fresh link.");
+      } else {
+        prompt(code ? "That code didn’t work for this exhibit." : "");
+      }
+    });
+  }
+
+  if (!window.PageMedia || !window.crypto || !crypto.subtle) {
+    fail("Unsupported browser", "Decrypting needs WebCrypto over a secure "
+      + "connection. Try a current version of Safari, Chrome, Edge or Firefox.");
+  } else if (!want) {
+    fail("Nothing to show", "This viewer opens one protected exhibit at a time, "
+      + "from a link that names it. Use the link you were given.");
+  } else {
+    ask.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var code = codeInput.value.replace(/^\s+|\s+$/g, "");
+      if (code) open(code, false);
+    });
+    var hashCode = want.code;
+    var code = hashCode || cachedCode();
+    if (code) open(code, !!hashCode);
+    else prompt("");
+  }
+})();
+</script>
+</body>
+</html>

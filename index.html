@@ -576,7 +576,7 @@
     <section class="sect" id="ai-projects" data-label="AI Projects" tabindex="-1">
       <p class="eyebrow">AI Projects</p>
       <h2 class="title">AI Projects<a class="hlink" href="#ai-projects" aria-label="Link to AI Projects">#</a></h2>
-      <p class="sect-intro" style="margin-top:18px">Products and services I have designed and built hands-on with Claude Code — from a shipped native macOS app to full-stack cloud applications and the automation that runs my week.</p>
+      <p class="sect-intro" style="margin-top:18px">Products and services I have designed and built hands-on with Claude Code — from a shipped native macOS app to MCP servers and integrations, a static site with client-side encrypted pages, and the automation that runs my week.</p>
 
       <!-- Applications -->
       <div class="sub" id="ai-apps" data-label="Applications">
@@ -599,6 +599,27 @@
             <li>Designed and shipped a two-component TypeScript system that gives Claude Desktop live read and write access across one or many Obsidian vaults — working through Obsidian's running app, so Claude sees the real search index, backlinks, and metadata rather than raw files on disk.</li>
             <li>Built an esbuild-bundled Obsidian community plugin that runs a token-authenticated localhost server per vault, paired with a stdio MCP server that auto-discovers open vaults and exposes tools spanning read, search, write, cross-vault copy and move, and deep links.</li>
             <li>Engineered for safety and easy setup: localhost-only binding with constant-time token auth and per-vault read-only toggles, packaged as a free macOS and Linux download with idempotent install scripts and tagged GitHub Actions releases.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>Microsoft Graph MCP server</h4>
+          <p class="role-meta">Self-hosted MCP server · Python · Microsoft Graph · OAuth 2.1 + On-Behalf-Of</p>
+          <ul class="role-bullets">
+            <li>Designed and built a remote MCP server that gives Claude full create, update, and delete reach into a personal Microsoft 365 tenant through Microsoft Graph — acting as the signed-in user under delegated permissions rather than as a tenant-wide daemon.</li>
+            <li>Chose an architecture in which the identity platform is the authorization server and the service is only a resource server: OAuth 2.1 with PKCE at the client, an On-Behalf-Of token exchange authenticated by a certificate client assertion at the server, and no refresh token ever stored — so multi-factor and Conditional Access are enforced at every connect and revocation is immediate.</li>
+            <li>Automated the identity provisioning rather than documenting portal clickwork: a dry-run-by-default, idempotent tool that creates both application registrations, wires them together, grants the delegated permissions and consent records, and writes the generated identifiers straight back into configuration.</li>
+            <li>Built the safety and verification layer alongside the service — confirmation-gated destructive operations that otherwise return a preview of exactly what they would affect, journaled mutations as an audit trail, capped and compacted responses, and a standalone auth-chain verifier that diagnoses each identity failure inline.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>jason.epel.us</h4>
+          <p class="role-meta">Static site · Python publisher · JavaScript &amp; WebCrypto · GitHub Pages</p>
+          <ul class="role-bullets">
+            <li>Built the site you are reading: a private source-of-truth repository that generates a fully published public one, so no published file is ever hand-edited — driven by a single Python publisher that reconciles a page registry, encrypts, generates, and publishes in one command, with per-page hashing for incremental change detection.</li>
+            <li>Implemented code-protected pages end to end — each page encrypted at publish time with a PBKDF2-derived AES-256-GCM key and decrypted in the browser by a hand-written WebCrypto gate, guarded by a round-trip verification so the publisher and the client decoder can never drift. Access codes live only in the private repository.</li>
+            <li>Built an incremental, idempotent photo and video pipeline that turns dropped originals into web-optimized, content-hashed derivatives with sips and ffmpeg — including transcodes with poster frames and Live Photo tiles — feeding a grid-and-lightbox viewer while the originals stay private.</li>
           </ul>
         </article>
       </div>
@@ -674,7 +695,7 @@
           </div>
           <div class="skill-group">
             <p class="overline">Security</p>
-            <ul class="tags"><li>DevSecOps</li><li>MDM &amp; secure mobile</li><li>Least privilege</li><li>Secret management</li><li>Firewalls &amp; VPN</li><li>Certificate authority</li></ul>
+            <ul class="tags"><li>DevSecOps</li><li>MDM &amp; secure mobile</li><li>OAuth 2.1 &amp; PKCE</li><li>Conditional Access</li><li>Least privilege</li><li>Secret management</li><li>Cryptography</li><li>Firewalls &amp; VPN</li><li>Certificate authority</li></ul>
           </div>
           <div class="skill-group">
             <p class="overline">Dev Tooling &amp; Integrations</p>

@@ -25,6 +25,12 @@
  * anyone with a valid code can decrypt that page, and once decrypted the content
  * lives in the visitor's browser. Rotate codes by re-encoding (see publish.py).
  *
+ * SIDECAR MEDIA: a page's photos are NOT inlined — they are published next to it as
+ * individual AES blobs (/p/<name>/media/<id>.jem) encrypted under the SAME code, and
+ * decrypted by site/media.js. On a successful unlock this script forwards the code to
+ * the decrypted page (window.__GATE_CODE__ + sessionStorage) so the page can read
+ * them without a second prompt. See page_media_lib.py for the format and the reasons.
+ *
  * These crypto parameters MUST match the private repo's publish.py exactly.
  */
 (function () {
@@ -109,7 +115,15 @@
   var _lastCode = "";
 
   // Replace the whole document with the decrypted page (scripts run).
+  //
+  // The code is handed on to the decrypted page, which needs it to decrypt any
+  // ENCRYPTED SIDECAR MEDIA published beside the page (see site/media.js — photos
+  // are too big to inline, so each ships as its own AES blob under the same code).
+  // Two channels because they fail differently: document.open() keeps the same
+  // global object, so window.__GATE_CODE__ survives the rewrite; sessionStorage
+  // additionally survives a refresh (that's what auto-unlocks on reload).
   function render(html) {
+    window.__GATE_CODE__ = _lastCode;
     try { sessionStorage.setItem(STORAGE_KEY, _lastCode); } catch (e) {}
     document.open();
     document.write(html);
