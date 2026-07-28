@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Only the public landing page is listed; everything under /p/ is code-gated
+     and deliberately kept out of search (robots.txt Disallow + per-page noindex). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://jason.epel.us/</loc>
+  </url>
+</urlset>

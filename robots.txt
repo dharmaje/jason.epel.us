@@ -2,3 +2,5 @@
 User-agent: *
 Allow: /
 Disallow: /p/
+
+Sitemap: https://jason.epel.us/sitemap.xml
