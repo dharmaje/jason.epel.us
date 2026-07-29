@@ -10,19 +10,21 @@
 <link rel="stylesheet" href="/fonts.css">
 <title>Exhibit — jason.epel.us</title>
 <!--
-  The standalone viewer for ONE encrypted sidecar image.
+  The standalone viewer for ONE encrypted sidecar exhibit — a photo, or a data file
+  (csv, xlsx, pdf, ...).
 
       /v/#p=<page-slug>/<blob-id>&code=<ACCESS CODE>
 
-  A gated page's photos are published beside it as individual AES-256-GCM blobs
+  A gated page's media are published beside it as individual AES-256-GCM blobs
   (/p/<slug>/media/<id>.jem) rather than inlined into the encrypted page, so that any
   single exhibit can be linked to on its own. This page is that link's destination: it
-  fetches one blob, decrypts it with the code from the URL, and shows the image with a
-  Download button — no gate prompt, no page around it. Hand someone this URL and they
-  keep that photo, long after they've closed the record it came from.
+  fetches one blob, decrypts it with the code from the URL, and shows the image — or,
+  for a data file, a download card — no gate prompt, no page around it. Hand someone
+  this URL and they keep that exhibit, long after they've closed the record it came from.
 
   The filename, MIME type and dimensions are encrypted INSIDE the blob, so this page
-  needs nothing but the URL. Decryption is site/media.js (shared with the gated pages).
+  needs nothing but the URL. Decryption is site/media.js (shared with the gated pages);
+  the MIME type sealed in the blob decides which presentation you get.
 -->
 <style>
   *{box-sizing:border-box}
@@ -95,6 +97,10 @@
   .panel input:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(95,199,201,.18)}
   .panel button{margin-top:1rem;width:100%;justify-content:center;padding:12px 0;font-size:.95rem}
   .err{min-height:1.1rem;margin:.7rem 0 0;font-size:.85rem;color:var(--err);font-weight:600}
+  /* ---- data-file exhibit (non-image blob) ---- */
+  .panel .ficon{width:36px;height:36px;margin:0 auto .9rem;display:block;color:var(--aqua)}
+  #file-name{word-break:break-all}
+  .panel a.btn{justify-content:center;padding:11px 20px}
   .spin{
     width:22px;height:22px;margin:0 auto .9rem;border-radius:50%;
     border:2px solid var(--hair);border-top-color:var(--aqua);animation:sp .8s linear infinite;
@@ -129,11 +135,20 @@
     <form id="ask" hidden autocomplete="off">
       <label for="code">Access code</label>
       <input id="code" name="code" type="password" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
-      <button class="btn primary" type="submit">Show the photo</button>
+      <button class="btn primary" type="submit">Show the exhibit</button>
       <p class="err" id="ask-err" role="alert"></p>
     </form>
   </div>
   <img id="shot" alt="" hidden>
+  <div class="panel" id="filecard" hidden>
+    <svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+    <h1 id="file-name"></h1>
+    <p id="file-meta"></p>
+    <a class="btn primary" id="file-dl" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Download
+    </a>
+  </div>
 </main>
 
 <footer class="foot" id="foot" hidden>
@@ -162,6 +177,10 @@
   var dims = document.getElementById("dims");
   var download = document.getElementById("download");
   var record = document.getElementById("record");
+  var filecard = document.getElementById("filecard");
+  var fileName = document.getElementById("file-name");
+  var fileMeta = document.getElementById("file-meta");
+  var fileDl = document.getElementById("file-dl");
 
   // ---- what to open, from the hash ---------------------------------------
   // #p=<slug>/<blob-id>&code=<CODE>   (a bare #<slug>/<blob-id> prompts for the code)
@@ -232,18 +251,35 @@
     codeInput.focus();
   }
 
+  function human(bytes) {
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + " MB";
+    if (bytes >= 1024) return Math.round(bytes / 1024) + " KB";
+    return bytes + " B";
+  }
+
+  // The MIME type sealed inside the blob picks the presentation: an image fills
+  // the stage; anything else (csv, xlsx, pdf, ...) gets a download card.
   function show(item, slug) {
     panel.hidden = true;
-    shot.src = item.url;
-    shot.alt = item.name || "Exhibit photo";
-    shot.hidden = false;
+    var isImage = (item.type || "").indexOf("image/") === 0;
+    if (isImage) {
+      shot.src = item.url;
+      shot.alt = item.name || "Exhibit photo";
+      shot.hidden = false;
+    } else {
+      fileName.textContent = item.name || "Exhibit file";
+      fileMeta.textContent = (item.type || "file") + " · " + human(item.bytes);
+      fileDl.href = item.url;
+      fileDl.setAttribute("download", item.name || "exhibit");
+      filecard.hidden = false;
+    }
     fname.textContent = item.name || "";
     var parts = [];
     if (item.w && item.h) parts.push(item.w + " × " + item.h);
-    parts.push((item.bytes / 1048576).toFixed(1) + " MB");
+    parts.push(human(item.bytes));
     dims.textContent = parts.join("  ·  ");
     download.href = item.url;
-    download.setAttribute("download", item.name || "exhibit.jpg");
+    download.setAttribute("download", item.name || "exhibit");
     record.href = "/p/" + slug + "/";
     record.hidden = false;
     chrome.hidden = false;

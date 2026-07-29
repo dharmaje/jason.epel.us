@@ -2,13 +2,16 @@
  *
  * Browser-side reader for ENCRYPTED SIDECAR MEDIA on jason.epel.us.
  *
- * A code-gated page's photos are too big to live inside content.enc, so each one is
- * published beside the page as its own AES-256-GCM blob:
+ * A code-gated page's media — photos, and data files like a csv/xlsx worksheet —
+ * can't ship inside content.enc (too big) or as plain files (the public repo is
+ * public on GitHub), so each is published beside the page as its own AES-256-GCM
+ * blob:
  *
  *     /p/<slug>/media/<id>.jem
  *
  * encrypted under the SAME access code as the page. This script turns one of those
- * blobs into an object URL an <img> can display. Two consumers:
+ * blobs into an object URL an <img> can display or an <a> can download. Two
+ * consumers:
  *
  *   1. A GATED PAGE. build-page-media.py inlines this file into the page's HTML
  *      together with a <script type="application/json" id="page-media"> manifest
@@ -148,10 +151,12 @@
     return k ? this.items[k] : null;
   };
 
+  /* Kinds: "thumb"/"full" for photos, "file" for a data file (csv, xlsx, ...) that
+   * was encrypted byte-for-byte. Falls through so callers can ask generically. */
   Media.prototype.blobId = function (name, kind) {
     var it = this.item(name);
     if (!it) return null;
-    return it[kind] || it.full || null;
+    return it[kind] || it.full || it.file || null;
   };
 
   /* Page-relative path of a blob — resolves correctly because gate.js renders the
@@ -222,6 +227,58 @@
     return new Media(manifest, code);
   }
 
+  /* Auto-wire the page's download links to the encrypted blobs. A document page
+   * authored against plain files (<a href="report.xlsx" download>) keeps working
+   * when opened straight from the vault; on the published page the plain file was
+   * withheld (publish.py never ships a data file in the clear), so every
+   * a[download] / a[data-media] whose target is in the manifest is rewired:
+   * click -> decrypt in the browser -> save under the original filename. The
+   * href itself becomes the standalone /v/ share link (code included, same as the
+   * lightbox's copy-link button), so copy/middle-click stays useful and the link
+   * still works if this handler never ran. Runs on DOMContentLoaded; a no-op on
+   * pages without a media block (and on /v/, which has none). */
+  function wireDownloads(media) {
+    var m = media || fromPage();
+    if (!m) return 0;
+    var wired = 0;
+    var anchors = document.querySelectorAll("a[download], a[data-media]");
+    Array.prototype.forEach.call(anchors, function (a) {
+      if (a.__pageMediaWired) return;
+      var ref = a.getAttribute("data-media") || a.getAttribute("href") || "";
+      var key = m.key(ref);
+      if (!key) return;
+      var it = m.item(key);
+      var kind = it.file ? "file" : "full";
+      var share = m.link(key);
+      a.__pageMediaWired = true;
+      if (share) {
+        a.href = share;
+        a.removeAttribute("download");  // the handler names the saved file itself
+      }
+      a.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        m.open(key, kind).then(function (r) {
+          var t = document.createElement("a");
+          t.href = r.url;
+          t.download = r.name || key;
+          document.body.appendChild(t);
+          t.click();
+          t.remove();
+        }, function () {
+          if (share) location.href = share;  // let /v/ report what went wrong
+        });
+      });
+      wired += 1;
+    });
+    return wired;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { wireDownloads(); });
+  } else {
+    wireDownloads();
+  }
+
   window.PageMedia = {
     VERSION: VERSION,
     parseEnvelope: parseEnvelope,
@@ -229,6 +286,7 @@
     openBlob: openBlob,
     create: function (manifest, code) { return new Media(manifest, code); },
     fromPage: fromPage,
-    pageCode: pageCode
+    pageCode: pageCode,
+    wireDownloads: wireDownloads
   };
 })();
