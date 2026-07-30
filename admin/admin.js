@@ -4,11 +4,12 @@
 (function () {
   "use strict";
 
-  // API base: on jason.epel.us the API is cross-origin on mm; on the mm dev
-  // mirror it's same-origin under /admin-api; anywhere else (direct service
-  // bind during development) the routes are unprefixed.
+  // API base: the public API origin is admin.epel.us (internet-reachable,
+  // Entra-gated). On the mm dev mirror it's same-origin under /admin-api;
+  // anywhere else (admin.epel.us itself, or a direct service bind during
+  // development) the routes are unprefixed on the same origin.
   var API =
-    location.hostname === "jason.epel.us" ? "https://mm.epel.us/admin-api"
+    location.hostname === "jason.epel.us" ? "https://admin.epel.us"
     : location.hostname === "mm.epel.us" ? "/admin-api"
     : "";
 
@@ -477,8 +478,83 @@
   });
 
   // --------------------------------------------------------------- login --
+  // Live mode signs in through Entra ID (auth code + PKCE); the password form
+  // survives only for fixture/dev mode, driven by GET /auth-config.
+  var authCfg = null;
+
+  function b64urlOf(buf) {
+    var s = "";
+    new Uint8Array(buf).forEach(function (b) { s += String.fromCharCode(b); });
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function randToken(n) {
+    var a = new Uint8Array(n);
+    crypto.getRandomValues(a);
+    return b64urlOf(a.buffer);
+  }
+  function redirectUri() {
+    var p = location.pathname.endsWith("/") ? location.pathname : location.pathname + "/";
+    return location.origin + p;
+  }
+  function startMsLogin() {
+    var verifier = randToken(48), st = randToken(16), nonce = randToken(16);
+    sessionStorage.setItem("adm_pkce", verifier);
+    sessionStorage.setItem("adm_state", st);
+    crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)).then(function (d) {
+      location.assign(
+        "https://login.microsoftonline.com/" + authCfg.tenant_id +
+        "/oauth2/v2.0/authorize?client_id=" + encodeURIComponent(authCfg.client_id) +
+        "&response_type=code&redirect_uri=" + encodeURIComponent(redirectUri()) +
+        "&scope=openid&response_mode=query&code_challenge_method=S256" +
+        "&code_challenge=" + b64urlOf(d) + "&state=" + st + "&nonce=" + nonce);
+    });
+  }
+  function finishMsLogin() {
+    // True when this page load is the redirect back from Entra.
+    var qs = new URLSearchParams(location.search);
+    if (!qs.has("code") && !qs.has("error")) return false;
+    history.replaceState(null, "", redirectUri());
+    showLogin(false);
+    if (qs.has("error")) {
+      $("loginError").textContent = qs.get("error_description") || qs.get("error");
+      return true;
+    }
+    if (qs.get("state") !== sessionStorage.getItem("adm_state")) {
+      $("loginError").textContent = "Sign-in state mismatch — try again.";
+      return true;
+    }
+    $("loginError").textContent = "Signing in…";
+    fetch("https://login.microsoftonline.com/" + authCfg.tenant_id + "/oauth2/v2.0/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: authCfg.client_id,
+        grant_type: "authorization_code",
+        code: qs.get("code"),
+        redirect_uri: redirectUri(),
+        code_verifier: sessionStorage.getItem("adm_pkce") || "",
+      }).toString(),
+    }).then(function (r) { return r.json(); }).then(function (tok) {
+      if (!tok.id_token) throw new Error(tok.error_description || "Sign-in failed.");
+      return api("POST", "/session", { id_token: tok.id_token });
+    }).then(function (data) {
+      state.token = data.token;
+      sessionStorage.setItem("adm_token", data.token);
+      $("loginError").textContent = "";
+      showApp();
+    }).catch(function (err) {
+      $("loginError").textContent = err.message;
+    }).finally(function () {
+      sessionStorage.removeItem("adm_pkce");
+      sessionStorage.removeItem("adm_state");
+    });
+    return true;
+  }
+
   $("loginForm").addEventListener("submit", function (e) {
     e.preventDefault();
+    if (!authCfg) { boot(); return; }             // config fetch failed — retry
+    if (authCfg.mode === "entra") { startMsLogin(); return; }
     var btn = $("loginSubmit");
     btn.disabled = true;
     $("loginError").textContent = "";
@@ -506,5 +582,19 @@
   });
 
   // ---------------------------------------------------------------- boot --
-  if (state.token) showApp(); else showLogin(false);
+  function boot() {
+    fetch(API + "/auth-config").then(function (r) { return r.json(); }).then(function (cfg) {
+      authCfg = cfg;
+      var pw = cfg.mode !== "entra";
+      $("password").classList.toggle("hidden", !pw);
+      $("password").required = pw;
+      $("loginSubmit").textContent = pw ? "Sign in" : "Sign in with Microsoft";
+      if (finishMsLogin()) return;
+      if (state.token) showApp(); else showLogin(false);
+    }).catch(function () {
+      showLogin(false);
+      $("loginError").textContent = "Can't reach the admin service.";
+    });
+  }
+  boot();
 })();
