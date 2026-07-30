@@ -4,12 +4,12 @@
 (function () {
   "use strict";
 
-  // API base: the public API origin is admin.epel.us (internet-reachable,
+  // API base: the public API origin is publish.epel.us (internet-reachable,
   // Entra-gated). On the mm dev mirror it's same-origin under /admin-api;
-  // anywhere else (admin.epel.us itself, or a direct service bind during
+  // anywhere else (publish.epel.us itself, or a direct service bind during
   // development) the routes are unprefixed on the same origin.
   var API =
-    location.hostname === "jason.epel.us" ? "https://admin.epel.us"
+    location.hostname === "jason.epel.us" ? "https://publish.epel.us"
     : location.hostname === "mm.epel.us" ? "/admin-api"
     : "";
 
