@@ -70,12 +70,13 @@ code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* Portrait sign-in: the ONLY trigger is the forehead hotspot. The rest of the
    image is deliberately inert — no cursor hint, no click handler. */
-.portrait { position: relative; width: 240px; margin: 0 auto; }
+.portrait { position: relative; width: 260px; margin: 0 auto; }
 .portrait img { width: 100%; display: block; border-radius: 12px; user-select: none; }
 .forehead {
   position: absolute;
-  /* placeholder geometry — retune to the real photo (percent of image box) */
-  top: 9%; left: 33%; width: 34%; height: 15%;
+  /* Tuned to me.jpg (480x480): the exposed forehead band between the cap brim
+     and the glasses. Retune if the photo changes. */
+  top: 25.5%; left: 19%; width: 58%; height: 10.5%;
   background: transparent; border: none; padding: 0;
   border-radius: 50%; cursor: pointer;
 }

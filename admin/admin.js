@@ -20,9 +20,19 @@
     jobs: [],             // last /jobs payload (recent 50)
     search: "",
     sort: { key: "slug", desc: false },
-    dismissed: {},        // job id -> true (done cards faded out)
+    dismissed: {},        // job id -> true (done cards faded, failed dismissed)
     timers: {},
   };
+  try {
+    JSON.parse(localStorage.getItem("adm_dismissed") || "[]")
+      .forEach(function (id) { state.dismissed[id] = true; });
+  } catch (e) { /* corrupt store — start clean */ }
+  function persistDismissed() {
+    try {
+      localStorage.setItem("adm_dismissed",
+        JSON.stringify(Object.keys(state.dismissed).slice(-200)));
+    } catch (e) { /* private mode etc. — dismissal just won't survive reload */ }
+  }
 
   // ---------------------------------------------------------------- utils --
   function esc(s) {
@@ -396,6 +406,7 @@
         // Fade success cards 60 s after they finish.
         if (j.finished_at && Date.now() - new Date(j.finished_at).getTime() > 60000) {
           state.dismissed[j.id] = true;
+          persistDismissed();
           return false;
         }
         return true;
@@ -435,6 +446,7 @@
       }).catch(function (err) { toast(err.message, true); refreshJobs(); });
     } else if (el.dataset.jact === "dismiss") {
       state.dismissed[job.id] = true;
+      persistDismissed();
       renderPending();
     } else if (el.dataset.jact === "details") {
       openFailure(job);
