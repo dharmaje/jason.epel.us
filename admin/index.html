@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Jason Epel</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="admin.css">
+<script>
+  // Apply the saved theme before first paint (dark is the default).
+  (function () {
+    var t = sessionStorage.getItem("adm_theme");
+    if (t) document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wordmark">Jason <span class="accent">Epel</span></div>
+  <div class="top-right">
+    <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+      <span class="ic-sun">☀</span><span class="ic-moon">☾</span>
+    </button>
+    <button id="logoutBtn" class="icon-btn hidden" title="Sign out" aria-label="Sign out">⎋</button>
+  </div>
+</header>
+
+<!-- Login (world-readable page: copy stays vague) -->
+<main id="loginView" class="login hidden">
+  <form id="loginForm" autocomplete="off">
+    <h1>Sign in.</h1>
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
+    <button type="submit" id="loginSubmit">Sign in</button>
+    <p id="loginError" class="login-error" role="alert"></p>
+  </form>
+</main>
+
+<!-- App -->
+<main id="appView" class="app hidden">
+  <section id="pendingStrip" class="pending hidden"></section>
+
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Filter by slug or title…" aria-label="Filter pages">
+    <button id="clearSearch" class="ghost hidden">Clear search</button>
+    <span id="meta" class="meta"></span>
+  </div>
+
+  <div class="tablewrap">
+    <table id="pagesTable">
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="slug">Page</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Public URL</th>
+          <th>Access code</th>
+          <th class="sortable" data-sort="last_published">Last published</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p id="emptyState" class="empty hidden"></p>
+  </div>
+</main>
+
+<!-- Modals -->
+<div id="modalBackdrop" class="backdrop hidden">
+  <div id="modalBox" class="modal" role="dialog" aria-modal="true"></div>
+</div>
+
+<div id="toasts" class="toasts"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
