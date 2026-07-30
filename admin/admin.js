@@ -505,7 +505,9 @@
         "https://login.microsoftonline.com/" + authCfg.tenant_id +
         "/oauth2/v2.0/authorize?client_id=" + encodeURIComponent(authCfg.client_id) +
         "&response_type=code&redirect_uri=" + encodeURIComponent(redirectUri()) +
-        "&scope=openid&response_mode=query&code_challenge_method=S256" +
+        // `profile` is required or the ID token carries no `oid` claim — and the
+        // service pins oid. Without it every sign-in ends in "sign-in rejected".
+        "&scope=openid%20profile&response_mode=query&code_challenge_method=S256" +
         "&code_challenge=" + b64urlOf(d) + "&state=" + st + "&nonce=" + nonce);
     });
   }
@@ -551,10 +553,26 @@
     return true;
   }
 
+  var portraitActive = false;   // true => forehead click is the ONLY trigger
+
+  $("forehead").addEventListener("click", function () {
+    if (authCfg && authCfg.mode === "entra") startMsLogin();
+  });
+  $("portraitImg").addEventListener("error", function () {
+    // No me.jpg published (or it failed to load): fall back to the button.
+    portraitActive = false;
+    $("portrait").classList.add("hidden");
+    $("loginTitle").classList.remove("hidden");
+    $("loginSubmit").classList.remove("hidden");
+  });
+
   $("loginForm").addEventListener("submit", function (e) {
     e.preventDefault();
     if (!authCfg) { boot(); return; }             // config fetch failed — retry
-    if (authCfg.mode === "entra") { startMsLogin(); return; }
+    if (authCfg.mode === "entra") {
+      if (!portraitActive) startMsLogin();        // portrait mode: forehead only
+      return;
+    }
     var btn = $("loginSubmit");
     btn.disabled = true;
     $("loginError").textContent = "";
@@ -589,6 +607,16 @@
       $("password").classList.toggle("hidden", !pw);
       $("password").required = pw;
       $("loginSubmit").textContent = pw ? "Sign in" : "Sign in with Microsoft";
+      if (!pw) {
+        // Entra mode: prefer the portrait; the img error handler reverts to the
+        // button if me.jpg is missing. complete+naturalWidth covers cached 404s.
+        portraitActive = true;
+        $("portrait").classList.remove("hidden");
+        $("loginTitle").classList.add("hidden");
+        $("loginSubmit").classList.add("hidden");
+        var img = $("portraitImg");
+        if (img.complete && img.naturalWidth === 0) img.dispatchEvent(new Event("error"));
+      }
       if (finishMsLogin()) return;
       if (state.token) showApp(); else showLogin(false);
     }).catch(function () {

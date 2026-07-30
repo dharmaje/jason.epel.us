@@ -29,7 +29,11 @@
 <!-- Login (world-readable page: copy stays vague) -->
 <main id="loginView" class="login hidden">
   <form id="loginForm" autocomplete="off">
-    <h1>Sign in.</h1>
+    <h1 id="loginTitle">Sign in.</h1>
+    <div id="portrait" class="portrait hidden">
+      <img id="portraitImg" src="me.jpg" alt="" draggable="false">
+      <button type="button" id="forehead" class="forehead" aria-label="Sign in"></button>
+    </div>
     <input id="password" type="password" placeholder="Password" autocomplete="current-password" required>
     <button type="submit" id="loginSubmit">Sign in</button>
     <p id="loginError" class="login-error" role="alert"></p>

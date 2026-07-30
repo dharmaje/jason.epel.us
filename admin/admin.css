@@ -68,6 +68,19 @@ code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .login button[disabled] { opacity: .6; cursor: default; }
 .login-error { color: var(--danger); font-size: 12px; min-height: 16px; margin: 0; }
 
+/* Portrait sign-in: the ONLY trigger is the forehead hotspot. The rest of the
+   image is deliberately inert — no cursor hint, no click handler. */
+.portrait { position: relative; width: 240px; margin: 0 auto; }
+.portrait img { width: 100%; display: block; border-radius: 12px; user-select: none; }
+.forehead {
+  position: absolute;
+  /* placeholder geometry — retune to the real photo (percent of image box) */
+  top: 9%; left: 33%; width: 34%; height: 15%;
+  background: transparent; border: none; padding: 0;
+  border-radius: 50%; cursor: pointer;
+}
+.forehead:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* App layout */
 .app { max-width: 1180px; margin: 0 auto; padding: 14px 20px 60px; }
 .toolbar { display: flex; align-items: center; gap: 10px; margin: 10px 0 12px; }
