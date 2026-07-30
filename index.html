@@ -436,6 +436,7 @@
           <li>Triage customer escalations personally, engaging through support to remediate issues and balancing escalation response against roadmap commitments to keep releases on schedule.</li>
           <li>Lead adoption of generative AI (Claude) across eSUB, from rolling out Claude for Work with Microsoft 365 to running an internal AI enablement hub and workshop program.</li>
           <li>Work hands-on with Claude Code alongside the team on internal MCP API services, an AWS Bedrock customer-issue triage agent, developer tooling, and automation, setting guardrails for AI-assisted engineering.</li>
+          <li>Directed and built an encrypted design-preview publishing system for sharing unreleased designs with outside reviewers — AES-256-GCM pages decrypted client-side with access codes and a private/public repository split so only ciphertext is ever published — plus a self-service browser admin gated by Entra ID SSO with a Cloudflare Worker auth proxy holding the only repository credential behind a strict allowlist.</li>
           <li>Run production operations and reliability for the SaaS portfolio, including observability and alerting (Datadog, CloudWatch, Lumigo) and feature-flagged delivery with LaunchDarkly.</li>
           <li>Own the business technology stack (CRM, ERP, accounting, IT, security, customer-health tooling) supporting sales, finance, marketing, and operations.</li>
         </ul>
@@ -666,6 +667,16 @@
           <p class="role-meta">Python + REST API · Excel</p>
           <ul class="role-bullets">
             <li>A two-way pipeline between a budgeting spreadsheet and the YNAB API, with reconciliation, pre-write confirmation, and a verifiable write log, plus a scheduled automation that mirrors balances between budgets idempotently.</li>
+          </ul>
+        </article>
+
+        <article class="proj">
+          <h4>Health-metrics pipeline</h4>
+          <p class="role-meta">Python · Vendor REST API · OAuth 2.0</p>
+          <ul class="role-bullets">
+            <li>Designed and built a self-hosted pipeline that pulls personal health metrics from a health platform's public API into three outputs that must always agree — an Excel workbook, a CSV, and a self-contained web page — every derived value computed once in a shared metrics module so the three can never drift.</li>
+            <li>Implemented the OAuth 2.0 authorization-code flow with the vendor's HMAC request-signing scheme and rotating refresh tokens from scratch — standard library only in the core, so no third party ever holds a token — with multi-profile guards that make cross-account data mix-ups structurally impossible.</li>
+            <li>Engineered around a class of silent-failure hazards — an API returning HTTP 200 on failure, dual-stack localhost callback traps, consent-screen session reuse — each diagnosed live and documented with its evidence.</li>
           </ul>
         </article>
       </div>
