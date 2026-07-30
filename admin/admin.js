@@ -72,7 +72,7 @@
         return data;
       });
     }, function () {
-      throw new Error("Can't reach the admin service — are you on the home network or Tailscale?");
+      throw new Error("Can't reach the admin service.");
     });
   }
 
