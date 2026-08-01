@@ -21,6 +21,8 @@
     search: "",
     sort: { key: "slug", desc: false },
     dismissed: {},        // job id -> true (done cards faded, failed dismissed)
+    favs: {},             // slug -> true (starred; floats to the top of the list)
+    favPending: {},       // slug -> true while a star write is in flight
     timers: {},
   };
   try {
@@ -32,6 +34,34 @@
       localStorage.setItem("adm_dismissed",
         JSON.stringify(Object.keys(state.dismissed).slice(-200)));
     } catch (e) { /* private mode etc. — dismissal just won't survive reload */ }
+  }
+
+  // Stars live in the service's DB (not localStorage), so they follow the
+  // account between devices. They ride along on every /pages payload.
+  function isFav(slug) { return !!state.favs[slug]; }
+  function applyFavorites(list) {
+    var next = {};
+    (list || []).forEach(function (slug) { next[slug] = true; });
+    // A star toggled a moment ago may not be in this payload yet (a poll can
+    // overtake the write) — the in-flight local value wins until it lands.
+    Object.keys(state.favPending).forEach(function (slug) {
+      if (state.favs[slug]) next[slug] = true; else delete next[slug];
+    });
+    state.favs = next;
+  }
+  function toggleFav(slug) {
+    var on = !state.favs[slug];
+    if (on) state.favs[slug] = true; else delete state.favs[slug];
+    state.favPending[slug] = true;
+    renderTable();                                  // optimistic: no wait
+    api("POST", "/favorites", { slug: slug, favorite: on }).then(function (data) {
+      delete state.favPending[slug];
+      applyFavorites(data.favorites);
+    }).catch(function (e) {
+      delete state.favPending[slug];
+      if (on) delete state.favs[slug]; else state.favs[slug] = true;   // revert
+      toast(e.message, true);
+    }).finally(function () { renderTable(); });
   }
 
   // ---------------------------------------------------------------- utils --
@@ -119,6 +149,7 @@
   function refreshPages() {
     return api("GET", "/pages").then(function (data) {
       state.pages = data;
+      applyFavorites(data.favorites);
       render();
     }).catch(function (e) { if (state.token) toast(e.message, true); });
   }
@@ -278,22 +309,38 @@
       (state.pages.source_commit || "?") + " · " + fmtDate(state.pages.generated_at);
   }
 
-  function renderTable() {
-    if (!state.pages) return;
+  // The one place the visible order is decided — render and the click-target
+  // lookup (pageForKey) both go through it, so row keys can never drift.
+  function visibleRows() {
     var q = state.search.trim().toLowerCase();
+    var s = state.sort;
     var rows = (state.pages.pages || []).filter(function (p) {
       return !q || p.slug.toLowerCase().indexOf(q) !== -1 ||
         (p.title || "").toLowerCase().indexOf(q) !== -1;
     });
-    var s = state.sort;
     rows.sort(function (a, b) {
+      // Starred pages float to the top, sorted among themselves by the active
+      // column; unstarring drops a page back into its normal position.
+      var fa = isFav(a.slug) ? 0 : 1, fb = isFav(b.slug) ? 0 : 1;
+      if (fa !== fb) return fa - fb;
       var av = a[s.key] || "", bv = b[s.key] || "";
       var c = av < bv ? -1 : av > bv ? 1 : 0;
       return s.desc ? -c : c;
     });
-    var archived = (state.pages.archived || []).filter(function (p) {
+    // Archived rows keep the payload order (they always have); stars only float
+    // to the top of the archived block, never above a live page.
+    var arch = (state.pages.archived || []).filter(function (p) {
       return !q || p.slug.toLowerCase().indexOf(q) !== -1;
     });
+    var fav = [], rest = [];
+    arch.forEach(function (p) { (isFav(p.slug) ? fav : rest).push(p); });
+    return { rows: rows, archived: fav.concat(rest) };
+  }
+
+  function renderTable() {
+    if (!state.pages) return;
+    var q = state.search.trim().toLowerCase();
+    var lists = visibleRows(), rows = lists.rows, archived = lists.archived;
 
     var html = rows.map(function (p, i) { return rowHtml(p, false, i); }).join("")
       + archived.map(function (p, i) { return rowHtml(p, true, i); }).join("");
@@ -305,6 +352,7 @@
     }
     $("clearSearch").classList.toggle("hidden", !q);
 
+    var s = state.sort;
     document.querySelectorAll("#pagesTable th.sortable").forEach(function (th) {
       th.classList.toggle("sorted", th.dataset.sort === s.key);
       th.classList.toggle("desc", th.dataset.sort === s.key && s.desc);
@@ -342,9 +390,16 @@
         '<button class="mini" data-act="archive" data-k="' + key + '" title="Take offline (keeps source)">Archive</button> ' +
         '<button class="mini danger" data-act="delete" data-k="' + key + '" title="Delete the source folder and the published page">Delete</button>';
     }
+    var fav = isFav(p.slug);
+    var star = '<button class="star' + (fav ? " on" : "") + '" data-act="fav" data-k="' + key +
+      '" aria-pressed="' + (fav ? "true" : "false") +
+      '" title="' + (fav ? "Unstar — sort this page normally" : "Star — keep this page at the top") +
+      '" aria-label="' + (fav ? "Unstar " : "Star ") + esc(p.slug) + '">' +
+      (fav ? "★" : "☆") + "</button>";
     return "<tr" + (archived ? ' class="archived"' : "") + ">" +
-      '<td class="page"><div class="slug mono">' + esc(p.slug) + "</div>" +
-      (archived ? "" : '<div class="title">' + esc(p.title || "") + "</div>") + "</td>" +
+      '<td class="page"><div class="pagecell">' + star + '<div class="pagetext">' +
+      '<div class="slug mono">' + esc(p.slug) + "</div>" +
+      (archived ? "" : '<div class="title">' + esc(p.title || "") + "</div>") + "</div></div></td>" +
       '<td><span class="chip ' + st.cls + '">' + st.label + "</span></td>" +
       notes + urlCell + codeCell +
       '<td class="nowrap">' + fmtDate(archived ? p.archived_at : p.last_published) + "</td>" +
@@ -353,26 +408,9 @@
 
   function pageForKey(key) {
     // Recompute the same filtered/sorted lists the last render used.
-    var q = state.search.trim().toLowerCase();
-    var archived = key[0] === "a";
+    var lists = visibleRows();
     var idx = parseInt(key.slice(1), 10);
-    if (archived) {
-      var arch = (state.pages.archived || []).filter(function (p) {
-        return !q || p.slug.toLowerCase().indexOf(q) !== -1;
-      });
-      return arch[idx];
-    }
-    var rows = (state.pages.pages || []).filter(function (p) {
-      return !q || p.slug.toLowerCase().indexOf(q) !== -1 ||
-        (p.title || "").toLowerCase().indexOf(q) !== -1;
-    });
-    var s = state.sort;
-    rows.sort(function (a, b) {
-      var av = a[s.key] || "", bv = b[s.key] || "";
-      var c = av < bv ? -1 : av > bv ? 1 : 0;
-      return s.desc ? -c : c;
-    });
-    return rows[idx];
+    return (key[0] === "a" ? lists.archived : lists.rows)[idx];
   }
 
   $("tbody").addEventListener("click", function (e) {
@@ -382,6 +420,7 @@
     if (!page) return;
     var archived = el.dataset.k[0] === "a";
     switch (el.dataset.act) {
+      case "fav": toggleFav(page.slug); break;
       case "notes": if (!archived) openNotes(page); break;
       case "copyurl": copyText(page.url, el); break;
       case "copydeep":
@@ -600,6 +639,7 @@
   $("logoutBtn").addEventListener("click", function () {
     api("DELETE", "/session").catch(function () {});
     state.pages = null;
+    state.favs = {};
     showLogin(false);
   });
 
