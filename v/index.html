@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="/fonts.css">
 <title>Exhibit — jason.epel.us</title>
 <!--
-  The standalone viewer for ONE encrypted sidecar exhibit — a photo, or a data file
-  (csv, xlsx, pdf, ...).
+  The standalone viewer for ONE encrypted sidecar exhibit — a photo, a video clip,
+  or a data file (csv, xlsx, pdf, ...).
 
       /v/#p=<page-slug>/<blob-id>&code=<ACCESS CODE>
 
@@ -66,6 +66,10 @@
   #shot{
     max-width:100%;max-height:100%;display:block;border-radius:10px;
     box-shadow:0 30px 70px -20px rgba(0,0,0,.75);cursor:zoom-in;
+  }
+  #reel{
+    max-width:100%;max-height:100%;display:block;border-radius:10px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.75);background:#000;
   }
   main.zoom{overflow:auto;align-items:flex-start;justify-content:flex-start}
   main.zoom #shot{max-width:none;max-height:none;cursor:zoom-out;border-radius:0}
@@ -140,6 +144,7 @@
     </form>
   </div>
   <img id="shot" alt="" hidden>
+  <video id="reel" controls playsinline preload="metadata" hidden></video>
   <div class="panel" id="filecard" hidden>
     <svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
     <h1 id="file-name"></h1>
@@ -171,6 +176,7 @@
   var askErr = document.getElementById("ask-err");
   var codeInput = document.getElementById("code");
   var shot = document.getElementById("shot");
+  var reel = document.getElementById("reel");
   var chrome = document.getElementById("chrome");
   var foot = document.getElementById("foot");
   var fname = document.getElementById("fname");
@@ -258,14 +264,20 @@
   }
 
   // The MIME type sealed inside the blob picks the presentation: an image fills
-  // the stage; anything else (csv, xlsx, pdf, ...) gets a download card.
+  // the stage; a video gets an inline player (the whole blob is already decrypted
+  // in memory, so the object URL is instantly seekable); anything else (csv,
+  // xlsx, pdf, ...) gets a download card.
   function show(item, slug) {
     panel.hidden = true;
     var isImage = (item.type || "").indexOf("image/") === 0;
+    var isVideo = (item.type || "").indexOf("video/") === 0;
     if (isImage) {
       shot.src = item.url;
       shot.alt = item.name || "Exhibit photo";
       shot.hidden = false;
+    } else if (isVideo) {
+      reel.src = item.url;
+      reel.hidden = false;
     } else {
       fileName.textContent = item.name || "Exhibit file";
       fileMeta.textContent = (item.type || "file") + " · " + human(item.bytes);
