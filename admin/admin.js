@@ -7,16 +7,18 @@
 (function () {
   "use strict";
 
-  // API base: the public API origin is publish.epel.us (internet-reachable,
-  // Entra-gated). On the mm dev mirror it's same-origin under /admin-api;
-  // anywhere else (publish.epel.us itself, or a direct service bind during
-  // development) the routes are unprefixed on the same origin.
+  // API base: the public API origin is jason-api.epel.us (internet-reachable,
+  // Entra-gated; publish.epel.us remains a working alias). On the mm dev
+  // mirror it's same-origin under /admin-api; anywhere else (the API vhosts
+  // themselves, or a direct service bind during development) the routes are
+  // unprefixed on the same origin.
   var API =
-    location.hostname === "jason.epel.us" ? "https://publish.epel.us"
+    location.hostname === "jason.epel.us" ? "https://jason-api.epel.us"
     : location.hostname === "mm.epel.us" ? "/admin-api"
     : "";
 
   var PAGE_SIZE = 12;           // rows per page before pagination appears
+  var UPLOAD_MAX = 8 * 1024 * 1024;   // must match HTML_MAX in service.py
   var STATUS_OPTIONS = ["Published", "Publishing", "Unpublishing", "Archived", "Failed"];
 
   var $ = function (id) { return document.getElementById(id); };
@@ -106,6 +108,9 @@
     return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + " MB" : Math.ceil(bytes / 1024) + " KB";
   }
   function verbLabel(verb) { return verb.replace(/_/g, " "); }
+  function slugify(name) {
+    return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
 
   // ------------------------------------------------------------------ api --
   function api(method, path, body) {
@@ -289,6 +294,119 @@
     $("mCopyCode").onclick = function () { copyText(page.code, "Code copied"); };
     $("mCloseX").onclick = function () { closeModal(true); };
   }
+
+  // ------------------------------------------------- upload / update HTML --
+  function filePickerHtml() {
+    return '<div class="filedrop" id="fileDrop">Click to choose a single HTML file (.html), up to ' +
+      fmtSize(UPLOAD_MAX) + "</div>" +
+      '<input type="file" id="fileInput" accept=".html,text/html" class="hidden">' +
+      '<p class="errline hidden" id="fileErr"></p>' +
+      '<p class="hint">The file is published as the page’s source HTML. It should be ' +
+      "self-contained (inline assets) and no larger than " + fmtSize(UPLOAD_MAX) + ".</p>";
+  }
+  function bindFilePicker(onChange) {
+    $("fileDrop").onclick = function () { $("fileInput").click(); };
+    $("fileInput").onchange = function (e) {
+      var f = e.target.files[0];
+      e.target.value = "";
+      if (!f) return;
+      if (f.size > UPLOAD_MAX) {
+        $("fileErr").textContent = "“" + f.name + "” is " + fmtSize(f.size) +
+          " — over the " + fmtSize(UPLOAD_MAX) + " limit. Reduce the file's size " +
+          "(viewers decrypt the whole page in the browser, so heavy pages load slowly).";
+        $("fileErr").classList.remove("hidden");
+        return;
+      }
+      $("fileErr").classList.add("hidden");
+      $("fileDrop").classList.add("on");
+      $("fileDrop").innerHTML = '<span class="fname">' + esc(f.name) +
+        "</span> — click to choose a different file";
+      onChange(f);
+    };
+  }
+  // Modal-owned job submission: errors render inline (the modal stays open),
+  // success closes it and hands progress to the pending strip.
+  function submitJobFromModal(goBtn, errEl, verb, slug, payload, okMsg) {
+    goBtn.disabled = true;
+    errEl.classList.add("hidden");
+    api("POST", "/jobs", { verb: verb, slug: slug, payload: payload }).then(function () {
+      closeModal(true);
+      toast(okMsg);
+      refreshJobs();
+    }).catch(function (e) {
+      errEl.textContent = e.message;
+      errEl.classList.remove("hidden");
+      goBtn.disabled = false;
+    });
+  }
+
+  function openUpload() {
+    var taken = {};
+    ((state.pages || {}).pages || []).forEach(function (p) { taken[p.slug] = 1; });
+    ((state.pages || {}).archived || []).forEach(function (p) { taken[p.slug] = 1; });
+    openModal(
+      "<h2>Upload New Page</h2>" +
+      '<p class="sub">The page is committed to the private repo; publish.py encrypts it, ' +
+      "mints a 4-word access code, and publishes it under <code>/p/</code>.</p>" +
+      "<label>Page name</label>" +
+      '<input type="text" id="upName" placeholder="e.g. Budget Redesign" autocomplete="off">' +
+      '<p class="hint hidden" id="upUrl"></p>' +
+      "<label>HTML file</label>" + filePickerHtml() +
+      '<p class="errline hidden" id="upErr"></p>' +
+      '<div class="actions"><button class="btn btn-quiet" id="mCancel">Cancel</button>' +
+      '<button class="btn btn-primary" id="mGo" disabled>Submit</button></div>');
+    var file = null;
+    function sync() {
+      var name = $("upName").value;
+      var slug = slugify(name);
+      var collision = slug && taken[slug];
+      if (slug) {
+        $("upUrl").innerHTML = "URL: <code>https://jason.epel.us/p/" + esc(slug) + "/</code>" +
+          (collision ? ' — <span style="color:var(--red);font-weight:700">a page with this name already exists</span>' : "");
+        $("upUrl").classList.remove("hidden");
+      } else {
+        $("upUrl").classList.add("hidden");
+      }
+      $("mGo").disabled = !slug || !file || !!collision;
+    }
+    $("upName").addEventListener("input", sync);
+    bindFilePicker(function (f) { file = f; sync(); });
+    $("mCancel").onclick = function () { closeModal(true); };
+    $("mGo").onclick = function () {
+      var name = $("upName").value;
+      var slug = slugify(name);
+      file.text().then(function (htmlText) {
+        submitJobFromModal($("mGo"), $("upErr"), "upload", slug,
+          { html: htmlText, title: name.trim() },
+          "Submitted — publishing " + slug);
+      });
+    };
+    $("upName").focus();
+  }
+
+  function openUpdate(page) {
+    openModal(
+      "<h2>Update “" + esc(page.slug) + "”</h2>" +
+      '<p class="sub">Upload a replacement HTML file. It is saved as the page’s source, ' +
+      "re-encrypted, and republished. The access code and URL stay the same.</p>" +
+      filePickerHtml() +
+      '<p class="errline hidden" id="upErr"></p>' +
+      '<div class="actions"><button class="btn btn-quiet" id="mCancel">Cancel</button>' +
+      '<button class="btn btn-primary" id="mGo" disabled>Save &amp; Republish</button></div>');
+    var file = null;
+    bindFilePicker(function (f) { file = f; $("mGo").disabled = false; });
+    $("mCancel").onclick = function () { closeModal(true); };
+    $("mGo").onclick = function () {
+      file.text().then(function (htmlText) {
+        submitJobFromModal($("mGo"), $("upErr"), "update_html", page.slug,
+          { html: htmlText },
+          "Submitted — republishing " + page.slug);
+      });
+    };
+  }
+  $("uploadBtn").addEventListener("click", function () {
+    if (state.pages) openUpload();
+  });
 
   // -------------------------------------------------------- confirmations --
   function confirmRotate(page) {
@@ -540,7 +658,10 @@
       actions = iconBtn("restore", "Restore (republish, new code)", "restore", k) +
         iconBtn("delete_outline", "Delete permanently", "delete", k, false, true);
     } else {
-      actions = iconBtn("lock_reset", "Rotate access code", "rotate", k) +
+      // Update HTML only for plain hand-authored pages; generated pages
+      // (galleries, video pages, sidecar media) are rebuilt from sources.
+      actions = (p.updatable ? iconBtn("upload_file", "Update HTML", "update", k) : "") +
+        iconBtn("lock_reset", "Rotate access code", "rotate", k) +
         iconBtn("inventory_2", "Archive (unpublish)", "archive", k) +
         iconBtn("delete_outline", "Delete permanently", "delete", k, false, true);
     }
@@ -563,6 +684,7 @@
     var page = r.p, archived = r.archived;
     switch (el.dataset.act) {
       case "fav": toggleFav(page.slug); break;
+      case "update": if (!archived) openUpdate(page); break;
       case "notes": if (!archived) openNotes(page); break;
       case "copyurl": copyText(page.url, "URL copied"); break;
       case "copydeep":
@@ -646,6 +768,8 @@
       case "delete": return "Deleted — the page now returns 404";
       case "rotate_code": return "Done — a new code was minted";
       case "restore": return "Republished — a new code was minted";
+      case "upload": return "Live at https://jason.epel.us/p/" + j.slug + "/ — code ready";
+      case "update_html": return "Republished — the code and URL are unchanged";
       case "edit_notes": return "Notes saved";
       default: return "Done";
     }
@@ -678,7 +802,8 @@
       } else if (j.state === "failed") {
         right = '<button class="btn btn-quiet" data-jact="details" data-jid="' + j.id + '">Details</button>' +
           ' <button class="btn btn-quiet" data-jact="dismiss" data-jid="' + j.id + '">Dismiss</button>';
-      } else if (j.state === "done" && (j.verb === "rotate_code" || j.verb === "restore")) {
+      } else if (j.state === "done" &&
+          (j.verb === "rotate_code" || j.verb === "restore" || j.verb === "upload")) {
         var pg = ((state.pages || {}).pages || []).find(function (p) { return p.slug === j.slug; });
         if (pg && pg.deep_link) {
           right = '<button class="btn btn-quiet" data-jact="securelink" data-jid="' + j.id + '">' +
