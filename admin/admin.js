@@ -1,4 +1,4 @@
-/* Publishing Admin SPA — jason.epel.us/admin (handoff-admin.md §6).
+/* Publishing Admin SPA — jason.epel.us/admin (spec: admin-service/README.md).
  * Plain static JS, no build step, NO SECRETS. UI look/feel + behavior ported
  * from the david.epel.us admin SPA; the backend stays this site's job-queue
  * service on mm (verbs: rotate_code / edit_notes / archive / restore / delete —
@@ -845,7 +845,7 @@
     var prompt = "Admin job " + job.id + ": " + job.verb + " on p/" + job.slug +
       "/ failed at " + (job.finished_at || job.reported_at || job.created_at) +
       " on " + host + ". Error: " + (job.error || "(none recorded)") +
-      ". Pipeline is publish.py per handoff-admin.md — investigate on the executor host.";
+      ". Pipeline is publish.py per admin-service/README.md — investigate on the executor host.";
     openModal(
       "<h2>Failed — " + esc(verbLabel(job.verb)) + " " + esc(job.slug) + "</h2>" +
       '<p class="sub" style="margin-top:8px">Created ' + esc(fmtDate(job.created_at)) +
