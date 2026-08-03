@@ -6,6 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Admin — Jason Epel</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/fonts.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 <link rel="stylesheet" href="admin.css">
 <script>
   // Apply the saved theme before first paint (dark is the default).
@@ -16,14 +18,26 @@
 </script>
 </head>
 <body>
-<header class="top">
+<!-- Login header — the pre-sign-in chrome is deliberately unchanged -->
+<header id="loginHeader" class="top">
   <div class="wordmark">Jason <span class="accent">Epel</span></div>
   <div class="top-right">
     <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
       <span class="ic-sun">☀</span><span class="ic-moon">☾</span>
     </button>
-    <button id="logoutBtn" class="icon-btn hidden" title="Sign out" aria-label="Sign out">⎋</button>
   </div>
+</header>
+
+<!-- App header (david.epel.us admin look: always-dark gradient bar) -->
+<header id="appHeader" class="hdr hidden">
+  <span class="brand">Jason <span>Epel</span></span>
+  <span class="tag">Publishing Admin</span>
+  <span class="spacer"></span>
+  <button id="themeToggleApp" class="iconbtn themebtn" data-tip="Switch theme" aria-label="Toggle theme">
+    <span id="themeIcon" class="material-icons-outlined">light_mode</span>
+  </button>
+  <span class="user"><span id="userAvatar" class="avatar">J</span><span id="userName">Jason</span></span>
+  <button id="logoutBtn" class="signout">Sign out</button>
 </header>
 
 <!-- Login (world-readable page: copy stays vague) -->
@@ -41,36 +55,43 @@
 </main>
 
 <!-- App -->
-<main id="appView" class="app hidden">
-  <section id="pendingStrip" class="pending hidden"></section>
-
+<main id="appView" class="wrap hidden">
   <div class="toolbar">
-    <input id="search" type="search" placeholder="Filter by slug or title…" aria-label="Filter pages">
-    <button id="clearSearch" class="ghost hidden">Clear search</button>
-    <span id="meta" class="meta"></span>
+    <h1>Pages</h1>
+    <span class="grow"></span>
+    <div class="search">
+      <span class="material-icons-outlined">search</span>
+      <input id="search" type="search" placeholder="Filter by slug or title…" aria-label="Filter pages">
+    </div>
   </div>
 
-  <div class="tablewrap">
-    <table id="pagesTable">
-      <thead>
-        <tr>
-          <th class="sortable" data-sort="slug">Page</th>
-          <th>Status</th>
-          <th>Notes</th>
-          <th>Public URL</th>
-          <th>Access code</th>
-          <th class="sortable" data-sort="last_published">Last published</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-    <p id="emptyState" class="empty hidden"></p>
+  <section id="pendingStrip" class="pending-strip hidden"></section>
+
+  <div class="card">
+    <div class="tablewrap">
+      <table id="pagesTable">
+        <thead>
+          <tr>
+            <th class="th-click" data-sort="slug">Page<span class="tharrow"></span></th>
+            <th class="th-click" id="statusTh">Status<span class="material-icons-outlined thfilter">filter_list</span></th>
+            <th>Notes</th>
+            <th>Public URL</th>
+            <th>Access Code</th>
+            <th>Size</th>
+            <th class="th-click" data-sort="last_published">Last Published<span class="tharrow"></span></th>
+            <th class="th-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="emptyState" class="empty hidden"></div>
+    </div>
+    <div id="pager" class="pager"></div>
   </div>
 </main>
 
 <!-- Modals -->
-<div id="modalBackdrop" class="backdrop hidden">
+<div id="modalBackdrop" class="scrim hidden">
   <div id="modalBox" class="modal" role="dialog" aria-modal="true"></div>
 </div>
 
