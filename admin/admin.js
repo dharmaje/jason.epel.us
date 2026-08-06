@@ -644,7 +644,9 @@
     if (archived) {
       codeCell = '<td><span class="pgtitle">—</span></td>';
     } else if (p.code) {
-      codeCell = '<td><div class="codecell"><span class="codeval">•••••••••••••</span>' +
+      // No masked placeholder: the dots carried no information and cost the Page
+      // column ~130px of width. Reveal opens the code in a modal; copy is one click.
+      codeCell = '<td><div class="codecell">' +
         iconBtn("visibility", "Reveal code", "reveal", k) +
         iconBtn("content_copy", "Copy code", "copycode", k) +
         "</div></td>";

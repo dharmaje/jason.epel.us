@@ -174,7 +174,10 @@ tbody tr:hover { background: rgba(95,199,201,.10); }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) tbody tr:hover { background: rgba(11,110,112,.07); } }
 .pagecell { display: flex; align-items: center; gap: 8px; }
 .pagetext { min-width: 0; }
-td .pgname { font-weight: 700; color: var(--heading); }
+/* The slug is the row's identity — never break it mid-word. The width freed by
+   dropping the masked access code goes here; a very long slug scrolls the table
+   (.tablewrap) instead of hyphenating. */
+td .pgname { font-weight: 700; color: var(--heading); white-space: nowrap; }
 td .pgtitle { font-size: 12px; color: var(--muted); font-weight: 400; }
 td.notes { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
 td.notes-edit { cursor: pointer; }
@@ -184,7 +187,6 @@ td.notes-edit:hover .noteicon { opacity: 1; }
 .urlcell { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .urlcell a { font-weight: 400; font-size: 12.5px; }
 .codecell { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-.codeval { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; background: rgba(128,128,128,.08); border-radius: 4px; padding: 3px 8px; min-width: 110px; letter-spacing: .04em; }
 .iconbtn { background: none; border: 0; border-radius: 4px; padding: 4px; cursor: pointer; color: var(--muted); display: inline-flex; position: relative; }
 .iconbtn:hover { background: rgba(128,128,128,.12); color: var(--heading); }
 .iconbtn:disabled { opacity: .35; cursor: default; }
